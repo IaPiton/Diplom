@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import searchengine.config.SiteConfig;
+import searchengine.dto.IndexingRunAndStop;
 import searchengine.dto.ResponseError;
 
 import searchengine.dto.statistics.StatisticsResponse;
@@ -23,6 +24,8 @@ public class ApiController {
 
     private final DateBaseService dateBaseService;
 
+    private IndexingRunAndStop indexingRunAndStop = new IndexingRunAndStop();
+
     private SiteConfig sites;
     @Autowired
     public ApiController(StatisticsService statisticsService, IndexingService indexingService, DateBaseService dateBaseService) {
@@ -38,14 +41,14 @@ public class ApiController {
 
     @GetMapping("/startIndexing")
     public ResponseEntity<Object> startIndexing() {
-        if (!dateBaseService.isIndexingRun()) {
+        if (!indexingRunAndStop.getIndexingRun().get()) {
             return ResponseEntity.ok(indexingService.startIndexing());
         }
         return ResponseEntity.badRequest().body(new ResponseError("Индексация уже запущена"));
     }
     @GetMapping("/stopIndexing")
     public ResponseEntity<Object> stopIndexing() {
-        if (!dateBaseService.isIndexingRun()) {
+        if (!indexingRunAndStop.getIndexingRun().) {
             return ResponseEntity.badRequest().body(new ResponseError("Индексация не запущена"));
         }
         return ResponseEntity.ok(indexingService.stopIndexing());

@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import searchengine.config.ParserConfig;
 import searchengine.config.SiteConfig;
+import searchengine.dto.IndexingRunAndStop;
 import searchengine.dto.ResponseTrue;
 import searchengine.model.Site;
 import searchengine.model.Status;
@@ -20,6 +21,8 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 @Data
 @Service
 public class IndexingService {
@@ -29,11 +32,13 @@ public class IndexingService {
     private final DateBaseService dateBaseService;
     @Autowired
     private SiteConfig siteConfig;
+
+    private IndexingRunAndStop indexingRunAndStop = new IndexingRunAndStop();
     public ResponseTrue startIndexing()
     {
         ArrayList<Site> sites = siteConfig.getSites();
-        dateBaseService.setIndexingRun(true);
-        dateBaseService.setIndexingStop(false);
+        indexingRunAndStop.getIndexingRun().set(true);
+        indexingRunAndStop.getIndexingStop().set(false);
         dateBaseService.deleteAllPages();
         for (Site site : sites) {
             CompletableFuture.runAsync(() -> {
@@ -57,17 +62,17 @@ public class IndexingService {
         parserLinks.setDateBaseService(dateBaseService);
         ForkJoinPool pool = new ForkJoinPool();
         pool.invoke(parserLinks);
-        if (dateBaseService.isIndexingStop()) {
+        if (indexingRunAndStop.getIndexingStop().get()) {
                 siteInDateBase.setLastError("Индексация остановлена");
                dateBaseService.updateSite(siteInDateBase, Status.FAILED);
            } else {
                 dateBaseService.updateSite(siteInDateBase, Status.INDEXED);
            }
-            dateBaseService.setIndexingRun(false);
+        indexingRunAndStop.getIndexingRun().set(false);
         }
     public Object stopIndexing() {
-        dateBaseService.setIndexingRun(false);
-        dateBaseService.setIndexingStop(true);
+        indexingRunAndStop.getIndexingRun().set(false);
+        indexingRunAndStop.getIndexingStop().set(true);
         return new ResponseTrue("true");
     }
     }

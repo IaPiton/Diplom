@@ -20,14 +20,14 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Service
 @Getter
 @Setter
 @Data
 public class DateBaseService {
-    private boolean indexingRun;
-    private boolean indexingStop;
+
 
     @Autowired
     private SiteConfig sites;

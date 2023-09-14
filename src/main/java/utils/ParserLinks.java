@@ -8,7 +8,9 @@ import org.jsoup.UnsupportedMimeTypeException;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.springframework.beans.factory.annotation.Autowired;
 import searchengine.config.ParserConfig;
+import searchengine.dto.IndexingRunAndStop;
 import searchengine.model.Site;
 import searchengine.services.DateBaseService;
 
@@ -29,7 +31,8 @@ public class ParserLinks extends RecursiveAction {
     private int codeResponse;
     private ParserConfig parserConfig;
     private DateBaseService dateBaseService;
-
+    @Autowired
+    private IndexingRunAndStop indexingRunAndStop = new IndexingRunAndStop();
     public int getCodeResponse() {
         return codeResponse;
     }
@@ -43,7 +46,7 @@ public class ParserLinks extends RecursiveAction {
     @Override
     protected void compute() {
 
-        if (!dateBaseService.isIndexingStop()) {
+        if (!indexingRunAndStop.getIndexingStop().get()) {
 
             List<ParserLinks> tasks = new ArrayList<>();
             if (linksSet.add(url)) {
