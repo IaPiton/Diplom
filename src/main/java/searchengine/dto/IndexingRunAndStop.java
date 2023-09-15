@@ -12,4 +12,5 @@ public class IndexingRunAndStop {
     private AtomicBoolean indexingRun = new AtomicBoolean();
     private AtomicBoolean indexingStop = new AtomicBoolean();
 
+
 }

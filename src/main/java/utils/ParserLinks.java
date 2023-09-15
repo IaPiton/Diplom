@@ -20,13 +20,13 @@ import java.net.SocketTimeoutException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.RecursiveAction;
 
 @Setter
 public class ParserLinks extends RecursiveAction {
     private final String url;
-    private final Set<String> linksSet;
+    private final CopyOnWriteArraySet<String> linksSet;
     private final Site site;
     private int codeResponse;
     private ParserConfig parserConfig;
@@ -37,10 +37,12 @@ public class ParserLinks extends RecursiveAction {
         return codeResponse;
     }
 
-    public ParserLinks(String url, Site site, Set<String> linksSet) {
+    public ParserLinks(String url, CopyOnWriteArraySet<String> linksSet, Site site) {
         this.url = url;
         this.linksSet = linksSet;
+
         this.site = site;
+
     }
 
     @Override
@@ -69,7 +71,7 @@ public class ParserLinks extends RecursiveAction {
                                 Thread.sleep(150);
                             } catch (InterruptedException e) {
                             }
-                            ParserLinks task = new ParserLinks(childLink, site, linksSet);
+                            ParserLinks task = new ParserLinks(childLink, linksSet, site);
                             task.setParserConfig(parserConfig);
                             task.setDateBaseService(dateBaseService);
                             task.fork();

@@ -20,8 +20,8 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ForkJoinPool;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 @Data
 @Service
@@ -37,8 +37,8 @@ public class IndexingService {
     public ResponseTrue startIndexing()
     {
         ArrayList<Site> sites = siteConfig.getSites();
-        indexingRunAndStop.getIndexingRun().set(true);
-        indexingRunAndStop.getIndexingStop().set(false);
+        indexingRunAndStop.getIndexingRun().lazySet(true);
+        indexingRunAndStop.getIndexingStop().lazySet(false);
         dateBaseService.deleteAllPages();
         for (Site site : sites) {
             CompletableFuture.runAsync(() -> {
@@ -56,8 +56,8 @@ public class IndexingService {
             siteForIndex.setId(dateBaseService.findSiteByName(siteForIndex).getId());
         }
         Site siteInDateBase = dateBaseService.updateSite(siteForIndex, Status.INDEXING);
-        Set<String> linksSet = Collections.synchronizedSet(new HashSet<>());
-        ParserLinks parserLinks = new ParserLinks(siteInDateBase.getUrl() + "/", siteInDateBase, linksSet);
+        CopyOnWriteArraySet<String> linksSet = new CopyOnWriteArraySet<>();
+        ParserLinks parserLinks = new ParserLinks(siteInDateBase.getUrl() + "/", linksSet, siteInDateBase);
         parserLinks.setParserConfig(parserConfig);
         parserLinks.setDateBaseService(dateBaseService);
         ForkJoinPool pool = new ForkJoinPool();
@@ -71,8 +71,8 @@ public class IndexingService {
         indexingRunAndStop.getIndexingRun().set(false);
         }
     public Object stopIndexing() {
-        indexingRunAndStop.getIndexingRun().set(false);
-        indexingRunAndStop.getIndexingStop().set(true);
+        indexingRunAndStop.getIndexingRun().lazySet(false);
+        indexingRunAndStop.getIndexingStop().lazySet(true);
         return new ResponseTrue("true");
     }
     }

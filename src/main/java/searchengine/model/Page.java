@@ -1,9 +1,10 @@
 package searchengine.model;
 
 import jakarta.persistence.*;
+import jakarta.websocket.Decoder;
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
+import org.springframework.web.servlet.tags.form.TextareaTag;
+import org.w3c.dom.Text;
 
 
 import java.util.Objects;
@@ -11,6 +12,8 @@ import java.util.Objects;
 
 @Data
 @Entity
+
+@Table(name = "page", indexes = {@Index(columnList = "path", name = "path_index")})
 public class Page {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "page_sequence")
@@ -19,7 +22,7 @@ public class Page {
     @ManyToOne()
     @JoinColumn(name = "site_id", referencedColumnName = "id", nullable = false)
     private Site siteByPage;
-    @Column(columnDefinition = "TEXT")
+    @Column(name = "path",  nullable = false)
     private String path;
     @Column(nullable = false)
     private int code;

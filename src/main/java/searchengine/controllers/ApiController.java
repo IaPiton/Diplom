@@ -48,7 +48,7 @@ public class ApiController {
     }
     @GetMapping("/stopIndexing")
     public ResponseEntity<Object> stopIndexing() {
-        if (!indexingRunAndStop.getIndexingRun().) {
+        if (indexingRunAndStop.getIndexingRun().compareAndSet(true, false)) {
             return ResponseEntity.badRequest().body(new ResponseError("Индексация не запущена"));
         }
         return ResponseEntity.ok(indexingService.stopIndexing());
