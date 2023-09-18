@@ -20,9 +20,9 @@ public class Lemmanisator {
     }
 
 
-    public String htmlClearing (Document document)
+    public String htmlClearing (String document)
     {
-        String clearingText = Jsoup.parse(document.text()).text();
+        String clearingText = Jsoup.parse(document).text();
         return clearingText;
     }
 
@@ -40,7 +40,8 @@ public class Lemmanisator {
     public HashMap<String, Integer> textToLemma (String sourceText)
     {
         wordsMap = new HashMap<>();
-        String text = sourceText.trim();
+        String text = htmlClearing(sourceText);
+        text = sourceText.trim();
         String[] words = text.toLowerCase().split(REGEXP_TEXT);
         for (String word : words)
         {

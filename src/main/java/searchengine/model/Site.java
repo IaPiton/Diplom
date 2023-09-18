@@ -34,6 +34,8 @@ public class Site {
     @OneToMany(mappedBy = "siteByPage")
     private Collection<Page> pagesById;
 
+    @OneToMany(mappedBy = "siteByLemma")
+    private Collection<Lemma> lemmasById;
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
