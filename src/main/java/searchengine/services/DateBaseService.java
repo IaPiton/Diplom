@@ -51,7 +51,7 @@ public class DateBaseService {
         pageRepository.deleteAll();
     }
     @Transactional
-    public synchronized Page addPageToDateBase(String path, int code, String content, Site site, int pageId){
+    public Page addPageToDateBase(String path, int code, String content, Site site, int pageId){
         Page page = new Page();
         if (!(pageId == 0)) {
             page.setId(pageId);

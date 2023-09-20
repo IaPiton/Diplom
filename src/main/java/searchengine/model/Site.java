@@ -16,10 +16,8 @@ import java.util.Objects;
 @Table(name = "site")
 public class Site {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE,
-            generator = "site_sequence")
-    @SequenceGenerator(name = "site_sequence")
-    private int id;
+    @GeneratedValue(strategy = GenerationType.AUTO)
+      private int id;
     @Enumerated(EnumType.STRING)
     private Status status;
     @Column(name = "status_time")
@@ -36,17 +34,5 @@ public class Site {
 
     @OneToMany(mappedBy = "siteByLemma")
     private Collection<Lemma> lemmasById;
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Site site = (Site) o;
-        return id == site.id && status == site.status && Objects.equals(statusTime, site.statusTime)
-                && Objects.equals(lastError, site.lastError) && Objects.equals(url, site.url)
-                && Objects.equals(name, site.name);
-    }
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, status, statusTime, lastError, url, name);
-    }
+
 }

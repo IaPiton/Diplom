@@ -5,19 +5,14 @@ import jakarta.persistence.*;
 import lombok.Data;
 import jakarta.persistence.Index;
 
-
 import java.util.Collection;
-
-
 
 @Data
 @Entity
-
 @Table(name = "page", indexes = {@Index(columnList = "path", name = "path_index")})
 public class Page {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "page_sequence")
-    @SequenceGenerator(name = "page_sequence", allocationSize = 100)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private int id;
     @ManyToOne()
     @JoinColumn(name = "site_id", referencedColumnName = "id", nullable = false)
@@ -28,7 +23,6 @@ public class Page {
     private int code;
     @Column(columnDefinition = "MEDIUMTEXT")
     private String content;
-
-
-
+    @OneToMany(mappedBy = "pageByIndex")
+    private Collection<Indexes> pagesById;
 }
