@@ -8,17 +8,23 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import searchengine.config.SiteConfig;
+import searchengine.model.Lemma;
 import searchengine.model.Page;
 import searchengine.model.Site;
 import searchengine.model.Status;
+import searchengine.repository.IndexesRepository;
+import searchengine.repository.LemmaRepository;
 import searchengine.repository.PageRepository;
 import searchengine.repository.SiteRepository;
+import utils.Lemmanisator;
 
 import java.io.IOException;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -35,6 +41,12 @@ public class DateBaseService {
     private SiteRepository siteRepository;
     @Autowired
     private PageRepository pageRepository;
+    @Autowired
+    private IndexesRepository indexesRepository;
+    @Autowired
+    private LemmaRepository lemmaRepository;
+
+
 
     @Transactional(readOnly = true)
     public Site findSiteByName(Site site) {
@@ -64,16 +76,33 @@ public class DateBaseService {
         return page;
     }
 
-    public void addEntitiesToDateBase(Document doc, String url, int code, Site site, int pageId)
-    {
+    public void addEntitiesToDateBase(Document doc, String url, int code, Site site, int pageId) throws IOException {
     String path = url.substring(url.indexOf('/', url.indexOf(".")));
     String content = "Page not found";
         if (!(doc == null)) {
         content = doc.html();
     }
     Page page = addPageToDateBase(path, code, content, site, pageId);
-     updateSite(site, Status.INDEXING);
+        if (code == 200) {
+            Lemmanisator lemmanisator = new Lemmanisator();
+
+        }
+
+        updateSite(site, Status.INDEXING);
 }
+    @Transactional
+public Lemma addLemmaToDateBase(HashMap<String, Integer> lemmaMap, Site site)
+    {
+        Lemma lemma = new Lemma();
+        for(String lemmas : lemmaMap.keySet())
+        {
+            lemma.setSiteByLemma(site);
+            lemma.setLemma(lemmas);
+            lemma.setFrequency(lemmaMap.get(lemmas));
+            lemmaRepository.saveAndFlush(lemma);
+        }
+        return lemma;
+    }
     @Transactional
     public Site updateLastError(Site site, String errorMessage) {
         site.setLastError(errorMessage);

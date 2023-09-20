@@ -1,5 +1,6 @@
 package utils;
 
+import lombok.Data;
 import org.apache.lucene.morphology.LuceneMorphology;
 import org.apache.lucene.morphology.russian.RussianLuceneMorphology;
 import org.jsoup.Jsoup;
@@ -8,7 +9,7 @@ import org.jsoup.nodes.Document;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
-
+@Data
 public class Lemmanisator {
     private HashMap<String, Integer> wordsMap;
     private static final String REGEXP_WORD = "[а-яА-ЯёЁ]+";
@@ -19,13 +20,11 @@ public class Lemmanisator {
 
     }
 
-
     public String htmlClearing (String document)
     {
         String clearingText = Jsoup.parse(document).text();
         return clearingText;
     }
-
     public boolean wordCheck(String word) {
         if (word.matches(REGEXP_WORD)) {
             List<String> wordBaseForms =
@@ -37,11 +36,11 @@ public class Lemmanisator {
         }
         return false;
     }
-    public HashMap<String, Integer> textToLemma (String sourceText)
+    public HashMap<String, Integer> textToLemma (String content)
     {
         wordsMap = new HashMap<>();
-        String text = htmlClearing(sourceText);
-        text = sourceText.trim();
+        String text = htmlClearing(content);
+        text = content.trim();
         String[] words = text.toLowerCase().split(REGEXP_TEXT);
         for (String word : words)
         {
