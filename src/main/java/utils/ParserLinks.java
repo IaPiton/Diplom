@@ -40,7 +40,6 @@ public class ParserLinks extends RecursiveAction {
     public ParserLinks(String url, CopyOnWriteArraySet<String> linksSet, Site site) {
         this.url = url;
         this.linksSet = linksSet;
-
         this.site = site;
 
     }

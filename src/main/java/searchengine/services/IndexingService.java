@@ -37,8 +37,8 @@ public class IndexingService {
     public ResponseTrue startIndexing()
     {
         ArrayList<Site> sites = siteConfig.getSites();
-        indexingRunAndStop.getIndexingRun().lazySet(true);
-        indexingRunAndStop.getIndexingStop().lazySet(false);
+        indexingRunAndStop.getIndexingRun().set(true);
+        indexingRunAndStop.getIndexingStop().set(false);
         dateBaseService.deleteAllPages();
         for (Site site : sites) {
             CompletableFuture.runAsync(() -> {
@@ -71,8 +71,8 @@ public class IndexingService {
         indexingRunAndStop.getIndexingRun().set(false);
         }
     public Object stopIndexing() {
-        indexingRunAndStop.getIndexingRun().lazySet(false);
-        indexingRunAndStop.getIndexingStop().lazySet(true);
+        indexingRunAndStop.getIndexingRun().set(false);
+        indexingRunAndStop.getIndexingStop().set(true);
         return new ResponseTrue("true");
     }
     }

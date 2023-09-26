@@ -9,7 +9,7 @@ import java.util.Collection;
 
 @Data
 @Entity
-@Table(name = "page", indexes = {@Index(columnList = "path", name = "path_index")})
+@Table(name = "page",  uniqueConstraints = {@UniqueConstraint(columnNames = {"path"})})
 public class Page {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
