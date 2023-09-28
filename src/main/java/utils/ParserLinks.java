@@ -1,6 +1,6 @@
 package utils;
 
-import lombok.Setter;
+import lombok.Data;
 import org.jsoup.Connection;
 import org.jsoup.HttpStatusException;
 import org.jsoup.Jsoup;
@@ -8,11 +8,14 @@ import org.jsoup.UnsupportedMimeTypeException;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-import org.springframework.beans.factory.annotation.Autowired;
+
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.stereotype.Component;
 import searchengine.config.ParserConfig;
 import searchengine.dto.IndexingRunAndStop;
 import searchengine.model.Site;
 import searchengine.services.DateBaseService;
+import searchengine.services.IndexingService;
 
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
@@ -23,7 +26,8 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.RecursiveAction;
 
-@Setter
+@Data
+@ComponentScan
 public class ParserLinks extends RecursiveAction {
     private final String url;
     private final CopyOnWriteArraySet<String> linksSet;
@@ -31,24 +35,15 @@ public class ParserLinks extends RecursiveAction {
     private int codeResponse;
     private ParserConfig parserConfig;
     private DateBaseService dateBaseService;
-    @Autowired
-    private IndexingRunAndStop indexingRunAndStop = new IndexingRunAndStop();
+    private IndexingService indexingService = new IndexingService(dateBaseService);
+
     public int getCodeResponse() {
         return codeResponse;
     }
 
-    public ParserLinks(String url, CopyOnWriteArraySet<String> linksSet, Site site) {
-        this.url = url;
-        this.linksSet = linksSet;
-        this.site = site;
-
-    }
-
     @Override
     protected void compute() {
-
-        if (!indexingRunAndStop.getIndexingStop().get()) {
-
+        if (!indexingService.getIndexingRunAndStop().getIndexingStop().get()) {
             List<ParserLinks> tasks = new ArrayList<>();
             if (linksSet.add(url)) {
                 try {

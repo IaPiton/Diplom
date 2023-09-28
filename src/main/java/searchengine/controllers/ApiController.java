@@ -24,8 +24,6 @@ public class ApiController {
 
     private final DateBaseService dateBaseService;
 
-    private IndexingRunAndStop indexingRunAndStop = new IndexingRunAndStop();
-
     private SiteConfig sites;
     @Autowired
     public ApiController(StatisticsService statisticsService, IndexingService indexingService, DateBaseService dateBaseService) {
@@ -41,14 +39,14 @@ public class ApiController {
 
     @GetMapping("/startIndexing")
     public ResponseEntity<Object> startIndexing() {
-        if (!indexingRunAndStop.getIndexingRun().get()) {
+        if (!indexingService.indexingRunAndStop.getIndexingRun().get()) {
             return ResponseEntity.ok(indexingService.startIndexing());
         }
         return ResponseEntity.badRequest().body(new ResponseError("Индексация уже запущена"));
     }
     @GetMapping("/stopIndexing")
     public ResponseEntity<Object> stopIndexing() {
-        if (indexingRunAndStop.getIndexingRun().compareAndSet(true, false)) {
+        if (!indexingService.indexingRunAndStop.getIndexingRun().get()) {
             return ResponseEntity.badRequest().body(new ResponseError("Индексация не запущена"));
         }
         return ResponseEntity.ok(indexingService.stopIndexing());

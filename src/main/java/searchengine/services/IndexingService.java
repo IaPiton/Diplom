@@ -16,12 +16,10 @@ import utils.ParserLinks;
 
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Data
 @Service
@@ -32,8 +30,9 @@ public class IndexingService {
     private final DateBaseService dateBaseService;
     @Autowired
     private SiteConfig siteConfig;
+    public IndexingRunAndStop indexingRunAndStop = new IndexingRunAndStop();
 
-    private IndexingRunAndStop indexingRunAndStop = new IndexingRunAndStop();
+
     public ResponseTrue startIndexing()
     {
         ArrayList<Site> sites = siteConfig.getSites();
