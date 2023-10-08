@@ -1,6 +1,8 @@
-package utils;
+package searchengine.services;
 
 import lombok.Data;
+
+import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Connection;
 import org.jsoup.HttpStatusException;
 import org.jsoup.Jsoup;
@@ -9,13 +11,14 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import org.springframework.context.annotation.ComponentScan;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.web.ErrorResponse;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.server.ResponseStatusException;
 import searchengine.config.ParserConfig;
-import searchengine.dto.IndexingRunAndStop;
+
 import searchengine.model.Site;
-import searchengine.services.DateBaseService;
-import searchengine.services.IndexingService;
 
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
@@ -26,32 +29,46 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.RecursiveAction;
 
+
 @Data
-@ComponentScan
-public class ParserLinks extends RecursiveAction {
-    private final String url;
-    private final CopyOnWriteArraySet<String> linksSet;
-    private final Site site;
+@Component
+@Slf4j
+public class ParserLinksService extends RecursiveAction {
+    private String url;
+    private CopyOnWriteArraySet<String> linksSet;
+    private Site site;
     private int codeResponse;
     private ParserConfig parserConfig;
+    @Autowired
     private DateBaseService dateBaseService;
-    private IndexingService indexingService = new IndexingService(dateBaseService);
+
+
+
+    public ParserLinksService() {
+    }
+
+    public ParserLinksService(String url, CopyOnWriteArraySet<String> linksSet, Site site) {
+        this.url = url;
+        this.linksSet = linksSet;
+        this.site = site;
+    }
 
     public int getCodeResponse() {
         return codeResponse;
     }
-
     @Override
     protected void compute() {
-        if (!indexingService.getIndexingRunAndStop().getIndexingStop().get()) {
-            List<ParserLinks> tasks = new ArrayList<>();
+
+
+        if (!dateBaseService.getIndexingStop().get()) {
+            List<ParserLinksService> tasks = new ArrayList<>();
             if (linksSet.add(url)) {
                 try {
                     Document document = getDocument(url);
                     dateBaseService.addEntitiesToDateBase(document, url, codeResponse, site, 0);
                     Elements resultLinks = document.select("a[href]");
                     if (!(resultLinks == null || resultLinks.size() == 0)) {
-                     List<String> linksChildren = new ArrayList<>();
+                        List<String> linksChildren = new ArrayList<>();
 
                         for (Element resultLink : resultLinks) {
                             String absLink = resultLink.attr("abs:href");
@@ -63,9 +80,9 @@ public class ParserLinks extends RecursiveAction {
                         for (String childLink : linksChildren) {
                             try {
                                 Thread.sleep(150);
-                            } catch (InterruptedException e) {
+                            } catch (InterruptedException e) { log.info("Произошло прерывание потока");
                             }
-                            ParserLinks task = new ParserLinks(childLink, linksSet, site);
+                            ParserLinksService task = new ParserLinksService(childLink, linksSet, site);
                             task.setParserConfig(parserConfig);
                             task.setDateBaseService(dateBaseService);
                             task.fork();
@@ -73,13 +90,16 @@ public class ParserLinks extends RecursiveAction {
                             tasks.add(task);
                         }
 
-                        }
-                    for (ParserLinks task : tasks) {
+                    }
+                    for (ParserLinksService task : tasks) {
                         task.join();
                     }
-                } catch (NullPointerException | ParserConfigurationException | IOException | SQLException ex) {
+                } catch (NullPointerException ex) {
+                    dateBaseService.updateLastError(site, url + " - " + "Страница пустая");
+                }catch (ParserConfigurationException | IOException | SQLException ex) {
                     dateBaseService.updateLastError(site, url + " - " + ex.getMessage());
                 }
+
             }
         }
     }
@@ -97,9 +117,10 @@ public class ParserLinks extends RecursiveAction {
             doc = connection.get();
             codeResponse = connection.response().statusCode();
         } catch (HttpStatusException | SocketTimeoutException e) {
-            codeResponse = 404;
+            codeResponse = 503;
             System.out.println(e.getLocalizedMessage());
         } catch (UnsupportedMimeTypeException e) {
+
             codeResponse = 404;
             System.out.println(e.getMessage());
         } catch (IOException e) {

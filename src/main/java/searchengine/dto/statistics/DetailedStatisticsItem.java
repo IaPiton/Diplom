@@ -15,6 +15,7 @@ public class DetailedStatisticsItem {
     private LocalDateTime statusTime;
     private String error;
     private long pages;
+    private long lemmas;
 
 
 

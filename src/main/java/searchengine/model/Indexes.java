@@ -20,5 +20,6 @@ public class Indexes {
     @JoinColumn(name = "lemma_id", referencedColumnName = "id", nullable = false)
     private Lemma lemmaByIndex;
 
-    private float frequency;
+    @Column(name = "rank_lemma")
+    private float rankLemma;
 }

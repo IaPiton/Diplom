@@ -12,8 +12,8 @@ indexing-settings:
   sites:
     - url: https://wpschool.ru
       name: Dom
-#    - url: http://www.playback.ru
-#      name: PlayBack.Ru
+    - url: http://www.playback.ru
+      name: PlayBack.Ru
 configparser:
   useragent: PitonSearchBot/1.0
   referrer: http://www.google.com
