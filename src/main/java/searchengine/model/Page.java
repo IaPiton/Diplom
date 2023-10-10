@@ -4,10 +4,13 @@ import jakarta.persistence.*;
 
 import lombok.Data;
 import jakarta.persistence.Index;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.Collection;
 
-@Data
+@Setter
+@Getter
 @Entity
 @Table(name = "page",   uniqueConstraints = {@UniqueConstraint(columnNames = {"site_id","path"})})
 public class Page {

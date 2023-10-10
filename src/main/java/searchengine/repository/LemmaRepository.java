@@ -9,6 +9,8 @@ import org.springframework.transaction.annotation.Transactional;
 import searchengine.model.Lemma;
 import searchengine.model.Site;
 
+import java.util.List;
+
 
 @Repository
 public interface LemmaRepository extends JpaRepository<Lemma, Integer> {
@@ -30,4 +32,6 @@ public interface LemmaRepository extends JpaRepository<Lemma, Integer> {
     @Query(value = "delete from Lemma l where l.id=:id",
             nativeQuery = true)
     void deleteLemmaPathByPage( @Param("id") Integer id);
+
+    List<Lemma> findByLemmaInAndSiteByLemmaOrderByFrequency(List<String> lemmas, Site siteByLemma);
 }

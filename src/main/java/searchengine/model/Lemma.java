@@ -2,12 +2,15 @@ package searchengine.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.Collection;
 
 
 @Entity
-@Data
+@Setter
+@Getter
 @Table(name = "lemma")
 public class Lemma {
     @Id

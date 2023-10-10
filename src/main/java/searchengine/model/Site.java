@@ -12,7 +12,8 @@ import java.util.Objects;
 
 
 @Entity
-@Data
+@Getter
+@Setter
 @Table(name = "site")
 public class Site {
     @Id

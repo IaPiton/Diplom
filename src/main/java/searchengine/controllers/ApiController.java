@@ -11,6 +11,7 @@ import searchengine.dto.statistics.StatisticsResponse;
 import searchengine.model.Site;
 import searchengine.services.DateBaseService;
 import searchengine.services.IndexingService;
+import searchengine.services.SearchService;
 import searchengine.services.StatisticsService;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -29,15 +30,17 @@ public class ApiController {
 
     private final DateBaseService dateBaseService;
     private final SiteConfig siteConfig;
+    private final SearchService searchService;
 
 
     private SiteConfig sites;
     @Autowired
-    public ApiController(StatisticsService statisticsService, IndexingService indexingService, DateBaseService dateBaseService, SiteConfig siteConfig) {
+    public ApiController(StatisticsService statisticsService, IndexingService indexingService, DateBaseService dateBaseService, SiteConfig siteConfig, SearchService searchService) {
         this.statisticsService = statisticsService;
         this.indexingService = indexingService;
         this.dateBaseService = dateBaseService;
         this.siteConfig = siteConfig;
+        this.searchService = searchService;
     }
     @GetMapping("/statistics")
     public ResponseEntity<StatisticsResponse> statistics() {
@@ -79,6 +82,19 @@ public class ApiController {
         return ResponseEntity.badRequest().body(new ResponseError("Индексация уже запущена. " +
                 "Остановите индексацию, или дождитесь ее окончания"));
     }
+    @GetMapping("/search")
+    public ResponseEntity<Object> search(
+            @RequestParam(value = "query") String query,
+            @RequestParam(value = "site", required = false) String site,
+            @RequestParam(value = "offset", defaultValue = "0", required = false) int offset,
+            @RequestParam(value = "limit", defaultValue = "20", required = false) int limit)
+            throws SQLException, IOException {
+        if (query.isEmpty()) {
+            return ResponseEntity.badRequest().body(new ResponseError("Задан пустой поисковый запрос"));
+        }
+        return ResponseEntity.ok(searchService.search(query, site, offset, limit));
+    }
+
 
 }
 
