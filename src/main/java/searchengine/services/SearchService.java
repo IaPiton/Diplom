@@ -9,6 +9,7 @@ import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import searchengine.config.SiteConfig;
+import searchengine.dto.ResultDto;
 import searchengine.dto.SearchDto;
 import searchengine.model.Indexes;
 import searchengine.model.Lemma;
@@ -44,7 +45,7 @@ public class SearchService {
     public SearchService() throws IOException {
     }
 
-    public Object search(String query, String url, int offset, int limit) {
+    public  List<SearchDto> search(String query, String url, int offset, int limit) {
         Site site = siteRepository.findByUrl(url);
         searchLemmaMap = lemmanisator.textToLemma(query);
         List<String> textLemmaList = new ArrayList<>(searchLemmaMap.keySet());
@@ -110,17 +111,12 @@ List<SearchDto> searchDtoList = new ArrayList<>();
             String body = cleanCodeForm(content, "body");
             titleStringBuilder.append(title).append(body);
             int pageValue = pageList.size();
-            List<Integer> lemmaIndex = new ArrayList<>();
-            int x = 0;
-            while (x < textLemmaList.size()){
-                String lemma =textLemmaList.get(x);
-                HashMap<String, Integer> lemmaContent = lemmanisator.textToLemma(titleStringBuilder.toString());
-                int value = lemmaContent.;
-                lemmaIndex.add(value);
-x++;
+            StringBuilder snippetBuilder = new StringBuilder();
+            snippetBuilder.append("123");
+            searchDtoList.add(new SearchDto(sites, siteName, urlPage, title, snippetBuilder.toString(), pageValue));
            }
-        }
-        return null;
+
+        return searchDtoList;
     }
     public String cleanCodeForm(String text, String element)
     {
