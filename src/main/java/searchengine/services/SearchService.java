@@ -90,7 +90,7 @@ public class SearchService {
         });
         List<Map.Entry<Page, Float>> sortList = new ArrayList<>(allRelevanceMap.entrySet());
         sortList.sort(Map.Entry.comparingByValue(Comparator.reverseOrder()));
-        Map<Page, Float> map = new ConcurrentHashMap<>();
+        LinkedHashMap<Page, Float> map = new LinkedHashMap<>();
         Map.Entry<Page, Float> pageFloatEntry;
         int y = 0;
         while (y < sortList.size()) {
@@ -112,10 +112,13 @@ List<SearchDto> searchDtoList = new ArrayList<>();
             int pageValue = pageList.size();
             List<Integer> lemmaIndex = new ArrayList<>();
             int x = 0;
-            while (i < textLemmaList.size()){
+            while (x < textLemmaList.size()){
                 String lemma =textLemmaList.get(x);
-                lemmaIndex.addAll(lemmanisator)
-            }
+                HashMap<String, Integer> lemmaContent = lemmanisator.textToLemma(titleStringBuilder.toString());
+                int value = lemmaContent.;
+                lemmaIndex.add(value);
+x++;
+           }
         }
         return null;
     }
