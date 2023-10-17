@@ -42,15 +42,26 @@ public class SearchService {
     private PageRepository pageRepository;
     @Autowired
     private IndexesRepository indexesRepository;
+    @Autowired
+    private DateBaseService dateBaseService;
     public SearchService() throws IOException {
     }
 
-    public  List<SearchDto> search(String query, String url, int offset, int limit) {
-        Site site = siteRepository.findByUrl(url);
+    public List<SearchDto> fullSearch(String query, int offset, int limit) {
+        List<Site> siteList = siteRepository.findAll();
+        List<Integer> siteId = dateBaseService.siteId(siteList);
+        return createSearchDtoList(siteId, query, offset, limit);
+    }
+
+    public List<SearchDto> search(String query, String url, int offset, int limit) {
+        List<Site> siteList = siteRepository.findByUrl(url);
+        List<Integer> siteId = dateBaseService.siteId(siteList);
+        return createSearchDtoList(siteId, query, offset, limit);
+    }
+    public List<SearchDto> createSearchDtoList (List<Integer> siteId, String query,int offset, int limit){
         searchLemmaMap = lemmanisator.textToLemma(query);
         List<String> textLemmaList = new ArrayList<>(searchLemmaMap.keySet());
-        lemmaRepository.flush();
-        List<Lemma> foundLemmaList = lemmaRepository.findByLemmaInAndSiteByLemmaOrderByFrequency(textLemmaList, site);
+        List<Lemma> foundLemmaList = lemmaRepository.lemmaList(textLemmaList);
         List<Integer> lemmaId = new ArrayList<>();
         for (Lemma lemma :foundLemmaList){
             System.out.println(lemma.getId());
@@ -125,4 +136,31 @@ List<SearchDto> searchDtoList = new ArrayList<>();
         String html = elements.stream().map(Element::html).collect(Collectors.joining());
         return Jsoup.parse(html).text();
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    public List<String> textLemma (String query){
+        searchLemmaMap = lemmanisator.textToLemma(query);
+        List<String> textLemmaList = new ArrayList<>(searchLemmaMap.keySet());
+        return textLemmaList;
+    }
+
+
+
 }

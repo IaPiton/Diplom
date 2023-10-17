@@ -19,6 +19,7 @@ import utils.Lemmanisator;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -158,6 +159,13 @@ public class DateBaseService {
     public List<Integer> lemmaIdByPath(Integer idPath) {
         List<Integer> lemmaIdByPat = indexesRepository.lemmaIdByPath(idPath);
         return lemmaIdByPat;
+    }
+    public List<Integer> siteId (List<Site> site){
+        List<Integer> siteId = new ArrayList<>();
+        for (Site sites : site){
+            siteId.add(sites.getId());
+        }
+        return siteId;
     }
 
 }

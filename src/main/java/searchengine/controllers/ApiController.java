@@ -94,19 +94,17 @@ public class ApiController {
             @RequestParam(value = "query") String query,
             @RequestParam(value = "site", required = false) String site,
             @RequestParam(value = "offset", defaultValue = "0", required = false) int offset,
-            @RequestParam(value = "limit", defaultValue = "20", required = false) int limit)
-            throws SQLException, IOException {
+            @RequestParam(value = "limit", defaultValue = "20", required = false) int limit) {
         List<SearchDto> searchData;
-        if (!site.isEmpty()) {
+        if (!(site == null)) {
             if (siteRepository.findByUrl(site) == null) {
-
                 return new ResultDto(false, "Данная страница находится за пределами сайтов,\n" +
                         "указанных в конфигурационном файле", HttpStatus.BAD_REQUEST) ;
             } else {
                 searchData = searchService.search(query, site, offset, 30);
             }
         } else {
-            searchData = searchService.search(query, site, offset, 30);
+            searchData = searchService.fullSearch(query, offset, 30);
         }
         return new ResultDto(true, searchData.size(), searchData, HttpStatus.OK);
     }

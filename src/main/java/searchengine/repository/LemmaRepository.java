@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
+import searchengine.model.Indexes;
 import searchengine.model.Lemma;
 import searchengine.model.Site;
 
@@ -33,5 +34,7 @@ public interface LemmaRepository extends JpaRepository<Lemma, Integer> {
             nativeQuery = true)
     void deleteLemmaPathByPage( @Param("id") Integer id);
 
-    List<Lemma> findByLemmaInAndSiteByLemmaOrderByFrequency(List<String> lemmas, Site siteByLemma);
+    @Transactional
+    @Query(value = "select * from Lemma l where l.lemma = ?1 ", nativeQuery = true)
+    List<Lemma> lemmaList(@Param("lemma") List<String> lemma);
 }
