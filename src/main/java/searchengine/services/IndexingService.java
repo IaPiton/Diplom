@@ -3,7 +3,9 @@ package searchengine.services;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
@@ -11,7 +13,9 @@ import org.springframework.stereotype.Service;
 import searchengine.config.ParserConfig;
 import searchengine.config.SiteConfig;
 
+import searchengine.dto.ResponseError;
 import searchengine.dto.ResponseTrue;
+import searchengine.dto.ResultDto;
 import searchengine.model.Site;
 import searchengine.model.Status;
 
@@ -27,6 +31,7 @@ import java.util.concurrent.ForkJoinPool;
 @Getter
 @Setter
 @Data
+@Slf4j
 public class IndexingService {
     @Autowired
     private ParserConfig parserConfig;
@@ -35,20 +40,25 @@ public class IndexingService {
     @Autowired
     private SiteConfig siteConfig;
 
-    public ResponseTrue startIndexing() {
-        ArrayList<Site> sites = siteConfig.getSites();
-        dateBaseService.getIndexingRun().set(true);
-        dateBaseService.getIndexingStop().set(false);
-        dateBaseService.deleteAllIndexes();
-        dateBaseService.deleteAllPages();
-        dateBaseService.deleteAllLemma();
-        for (Site site : sites) {
-            CompletableFuture.runAsync(() -> {
-                indexingSite(site);
+    public ResultDto startIndexing() {
+     if (dateBaseService.getIndexingRun().get()) {
+         new ResultDto(false, "Индексация уже запущена").getError();
+     } else {
+         log.info("Индексация запущена");
+         ArrayList<Site> sites = siteConfig.getSites();
+         dateBaseService.getIndexingRun().compareAndSet(false, true);
+         dateBaseService.getIndexingStop().compareAndSet(true, false);
+         dateBaseService.deleteAllIndexes();
+         dateBaseService.deleteAllPages();
+         dateBaseService.deleteAllLemma();
+         for (Site site : sites) {
+             CompletableFuture.runAsync(() -> {
+                 indexingSite(site);
 
-            }, ForkJoinPool.commonPool());
-        }
-        return new ResponseTrue("true");
+             }, ForkJoinPool.commonPool());
+         }
+     }
+        return new ResultDto(true);
     }
 
     @Async
@@ -61,10 +71,29 @@ public class IndexingService {
         pool.invoke(parserLinks);
         indexingFinish(siteInDateBase);
     }
+    public ResultDto startIndexingPage (String url){
+        if (dateBaseService.getIndexingRun().get()) {
+            new ResultDto(false, "Индексация уже запущена. " +
+                    "Остановите индексацию, или дождитесь ее окончания").getError();
+        }else {
+            ArrayList<Site> sites = siteConfig.getSites();
+            for (Site siteForIndex : sites) {
+                if (!url.toLowerCase().contains(siteForIndex.getUrl())) {
+                    log.info("Указанная страница" + "за пределами конфигурационного файла");
+                    new ResultDto(false, "Данная страница находится " +
+                            "за пределами сайтов,указаных в конфигурационном файле.").getError();
+                }else {
+                  log.info("Страница - " + url + " - добавлена на переиндексацию");
+                  indexingPage(url, siteForIndex);
+                }
+            }
+        }
+        return new ResultDto(true);
+    }
 
-    public Object indexingPage(String url, Site siteForIndex) {
-        dateBaseService.getIndexingRun().set(true);
-        dateBaseService.getIndexingStop().set(false);
+    public ResultDto indexingPage(String url, Site siteForIndex) {
+        dateBaseService.getIndexingRun().compareAndSet(false,true);
+        dateBaseService.getIndexingStop().compareAndSet(true, false);
         String path = url.substring(url.indexOf('/', url.indexOf(".")));
         if (!(dateBaseService.findPathByPage(path) == null)) {
             Integer idPath = dateBaseService.findPathByPage(path);
@@ -82,13 +111,21 @@ public class IndexingService {
         parseConfig(parserLinks);
         pool.invoke(parserLinks);
         indexingFinish(siteInDateBase);
-        return new ResponseTrue("true");
-    }
+    return new ResultDto(true);
+}
 
-    public Object stopIndexing() {
-        dateBaseService.getIndexingRun().set(false);
-        dateBaseService.getIndexingStop().set(true);
-        return new ResponseTrue("true");
+
+
+
+    public ResultDto stopIndexing() {
+        if (!dateBaseService.getIndexingRun().get()) {
+            new ResultDto(false, "Индексация не запущена").getError();
+        } else {
+            log.info("Остановка индексации");
+            dateBaseService.getIndexingRun().compareAndSet(true, false);
+            dateBaseService.getIndexingStop().compareAndSet(false, true);
+        }
+        return new ResultDto(true);
     }
 
     public void indexingFinish(Site siteInDateBase) {
@@ -99,8 +136,8 @@ public class IndexingService {
         } else {
             dateBaseService.updateSite(siteInDateBase, Status.INDEXED);
         }
-
-        dateBaseService.getIndexingRun().set(false);
+log.info("Индексация завершена");
+        dateBaseService.getIndexingRun().compareAndSet(true,false);
     }
 
     public void parseConfig(ParserLinksService parserLinks) {

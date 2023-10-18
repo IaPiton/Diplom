@@ -26,7 +26,6 @@ public interface IndexesRepository  extends JpaRepository<Indexes, Integer> {
     @Query("DELETE FROM Indexes")
     void deleteAll();
 
-
     @Transactional
     @Query(value = "select * from Indexes where Indexes.lemma_id in :lemmaId and Indexes.page_id in :pageId", nativeQuery = true)
     List<Indexes> findByPageAndLemmas(@Param("lemmaId") List<Integer> lemmaId,

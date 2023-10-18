@@ -118,7 +118,7 @@ public class DateBaseService {
     }
 
     @Transactional
-    public synchronized void indexAddToDB(Page page, HashMap<Integer, Float> idMap, Site site) {
+    public void indexAddToDB(Page page, HashMap<Integer, Float> idMap, Site site) {
         idMap.forEach((lemmaId, rank) -> {
             Indexes index = new Indexes();
             index.setPageByIndex(page);
@@ -166,6 +166,30 @@ public class DateBaseService {
             siteId.add(sites.getId());
         }
         return siteId;
+    }
+    public List<Page> pageListByLemma (List<Lemma> lemmaList){
+        List<Page> pageList = new ArrayList<>();
+        List<Integer> lemmaId = lemmaId(lemmaList);
+        pageList = pageRepository.pageInIndex(lemmaId);
+        return pageList;
+    }
+    public List<Integer> lemmaId (List<Lemma> lemmaList){
+        List<Integer> lemmaId = new ArrayList<>();
+        for (Lemma lemma : lemmaList){
+            lemmaId.add(lemma.getId());
+        }
+        return lemmaId;
+    }
+
+    public List<Indexes> indexesListByLemmaByPage (List<Lemma> lemmaList, List<Page> pageList){
+        List<Indexes> indexesList = new ArrayList<>();
+        List<Integer> lemmaId = lemmaId(lemmaList);
+        List<Integer> pageId = new ArrayList<>();
+        for (Page page : pageList){
+            pageId.add(page.getId());
+        }
+        indexesList = indexesRepository.findByPageAndLemmas(lemmaId, pageId);
+        return indexesList;
     }
 
 }
