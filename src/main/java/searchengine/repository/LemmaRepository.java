@@ -29,6 +29,7 @@ public interface LemmaRepository extends JpaRepository<Lemma, Integer> {
     @Modifying
     @Query("DELETE FROM Lemma l WHERE l.frequency=0")
     void deleteOfFrequencyIsNull();
+    @Transactional
     @Modifying
     @Query(value = "delete from Lemma l where l.id=:id",
             nativeQuery = true)

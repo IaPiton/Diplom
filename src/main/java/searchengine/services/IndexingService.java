@@ -5,7 +5,6 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
@@ -13,8 +12,6 @@ import org.springframework.stereotype.Service;
 import searchengine.config.ParserConfig;
 import searchengine.config.SiteConfig;
 
-import searchengine.dto.ResponseError;
-import searchengine.dto.ResponseTrue;
 import searchengine.dto.ResultDto;
 import searchengine.model.Site;
 import searchengine.model.Status;
@@ -54,7 +51,6 @@ public class IndexingService {
          for (Site site : sites) {
              CompletableFuture.runAsync(() -> {
                  indexingSite(site);
-
              }, ForkJoinPool.commonPool());
          }
      }
@@ -72,23 +68,28 @@ public class IndexingService {
         indexingFinish(siteInDateBase);
     }
     public ResultDto startIndexingPage (String url){
+        String result = "";
+        Boolean resultResponse = true;
         if (dateBaseService.getIndexingRun().get()) {
-            new ResultDto(false, "Индексация уже запущена. " +
-                    "Остановите индексацию, или дождитесь ее окончания").getError();
+            resultResponse = false;
+           result = "Индексация уже запущена. " +
+                    "Остановите индексацию, или дождитесь ее окончания";
         }else {
             ArrayList<Site> sites = siteConfig.getSites();
             for (Site siteForIndex : sites) {
-                if (!url.toLowerCase().contains(siteForIndex.getUrl())) {
-                    log.info("Указанная страница" + "за пределами конфигурационного файла");
-                    new ResultDto(false, "Данная страница находится " +
-                            "за пределами сайтов,указаных в конфигурационном файле.").getError();
+                if (url.toLowerCase().contains(siteForIndex.getUrl())) {
+                    resultResponse = true;
+                    log.info("Страница - " + url + " - добавлена на переиндексацию");
+                    indexingPage(url, siteForIndex);
                 }else {
-                  log.info("Страница - " + url + " - добавлена на переиндексацию");
-                  indexingPage(url, siteForIndex);
+                    resultResponse = false;
+                    result =  "Данная страница находится " +
+                            "за пределами сайтов, указаных в конфигурационном файле.";
+                    log.info(result);
                 }
             }
         }
-        return new ResultDto(true);
+        return new ResultDto(resultResponse, result);
     }
 
     public ResultDto indexingPage(String url, Site siteForIndex) {

@@ -58,8 +58,6 @@ public class ParserLinksService extends RecursiveAction {
     }
     @Override
     protected void compute() {
-
-
         if (!dateBaseService.getIndexingStop().get()) {
             List<ParserLinksService> tasks = new ArrayList<>();
             if (linksSet.add(url)) {
@@ -116,10 +114,10 @@ public class ParserLinksService extends RecursiveAction {
 
             doc = connection.get();
             codeResponse = connection.response().statusCode();
-        } catch (HttpStatusException | SocketTimeoutException e) {
+          } catch (HttpStatusException | SocketTimeoutException e) {
             codeResponse = 503;
             System.out.println(e.getLocalizedMessage());
-        } catch (UnsupportedMimeTypeException e) {
+          } catch (UnsupportedMimeTypeException e) {
 
             codeResponse = 404;
             System.out.println(e.getMessage());
@@ -127,6 +125,7 @@ public class ParserLinksService extends RecursiveAction {
             e.printStackTrace();
             codeResponse = 404;
         }
+
         return doc;
     }
 }

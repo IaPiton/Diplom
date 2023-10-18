@@ -11,11 +11,13 @@ import searchengine.model.Page;
 import java.util.List;
 
 public interface IndexesRepository  extends JpaRepository<Indexes, Integer> {
+    @Transactional
     @Modifying
     @Query(value = "SELECT lemma_id from Indexes i where i.page_id =:pageId",
             nativeQuery = true)
     List<Integer> lemmaIdByPath( @Param("pageId") Integer idPath);
 
+    @Transactional
     @Modifying
     @Query(value = "delete from Indexes i where i.lemma_id=:id",
             nativeQuery = true)
