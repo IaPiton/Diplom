@@ -40,6 +40,7 @@ public class ApiController {
 
 
     private SiteConfig sites;
+
     @Autowired
     public ApiController(StatisticsService statisticsService, IndexingService indexingService, DateBaseService dateBaseService, SiteRepository siteRepository, SiteConfig siteConfig, SearchService searchService) {
         this.statisticsService = statisticsService;
@@ -49,6 +50,7 @@ public class ApiController {
         this.siteConfig = siteConfig;
         this.searchService = searchService;
     }
+
     @GetMapping("/statistics")
     public ResponseEntity<StatisticsResponse> statistics() {
         return ResponseEntity.ok(statisticsService.getStatistics());
@@ -57,21 +59,23 @@ public class ApiController {
 
     @GetMapping("/startIndexing")
     public ResultDto startIndexing() {
-            return indexingService.startIndexing();
-        }
+        return indexingService.startIndexing();
+    }
 
     @GetMapping("/stopIndexing")
     public ResultDto stopIndexing() {
         return indexingService.stopIndexing();
     }
+
     @PostMapping("/indexPage")
     public ResultDto getPage(@RequestParam(name = "url") String url) {
         if (url.isEmpty()) {
             log.info("Страница не указана");
             return new ResultDto(false, "Страница не указана", HttpStatus.BAD_REQUEST);
         }
-return indexingService.startIndexingPage(url);
+        return indexingService.startIndexingPage(url);
     }
+
     @GetMapping("/search")
     public ResultDto search(
             @RequestParam(value = "query") String query,
@@ -82,7 +86,7 @@ return indexingService.startIndexingPage(url);
         if (!(site == null)) {
             if (siteRepository.findByUrl(site) == null) {
                 return new ResultDto(false, "Данная страница находится за пределами сайтов,\n" +
-                        "указанных в конфигурационном файле", HttpStatus.BAD_REQUEST) ;
+                        "указанных в конфигурационном файле", HttpStatus.BAD_REQUEST);
             } else {
                 searchData = searchService.search(query, site, offset, 30);
             }

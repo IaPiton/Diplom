@@ -7,8 +7,8 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
+
 @Data
 public class Lemmanisator {
     private HashMap<String, Integer> wordsMap;
@@ -53,5 +53,30 @@ public class Lemmanisator {
             }
         }
         return wordsMap;
+    }
+
+    public Collection<Integer> findLemmaIndexInWord(String content, String lemma) {
+        List<Integer> listLemmaIndex = new ArrayList<>();
+        String[] elements = content.toLowerCase().split("\\p{Punct}|\\s");
+        int index = 0;
+        List<String> lemmas;
+        for (String el : elements) {
+            lemmas = getLemma(el);
+            for (String lem : lemmas) {
+                if (lem.equals(lemma)) {
+                    listLemmaIndex.add(index);
+                }
+            }
+            index += el.length() + 1;
+        }
+        Collections.sort(listLemmaIndex);
+        return listLemmaIndex;
+    }
+    public List<String> getLemma (String word){
+        List<String> lemmaList = new ArrayList<>();
+        if(wordCheck(word)){
+            lemmaList = luceneMorph.getNormalForms(word);
+        }
+        return  lemmaList;
     }
 }
