@@ -6,22 +6,18 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import searchengine.config.SiteConfig;
-import searchengine.dto.ResponseError;
+
 
 import searchengine.dto.ResultDto;
 import searchengine.dto.SearchDto;
 import searchengine.dto.statistics.StatisticsResponse;
-import searchengine.model.Site;
+
 import searchengine.repository.SiteRepository;
 import searchengine.services.DateBaseService;
 import searchengine.services.IndexingService;
 import searchengine.services.SearchService;
 import searchengine.services.StatisticsService;
 
-import javax.xml.parsers.ParserConfigurationException;
-import java.io.IOException;
-import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 
 @RestController
