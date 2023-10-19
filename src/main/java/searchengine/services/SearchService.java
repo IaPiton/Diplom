@@ -1,7 +1,5 @@
 package searchengine.services;
 
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.TypedQuery;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -9,27 +7,22 @@ import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import searchengine.config.SiteConfig;
-import searchengine.dto.ResultDto;
 import searchengine.dto.SearchDto;
 import searchengine.model.Indexes;
 import searchengine.model.Lemma;
 import searchengine.model.Page;
 import searchengine.model.Site;
-import searchengine.repository.IndexesRepository;
 import searchengine.repository.LemmaRepository;
-import searchengine.repository.PageRepository;
 import searchengine.repository.SiteRepository;
 import utils.Lemmanisator;
-
 import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 @Service
 public class SearchService {
     Lemmanisator lemmanisator = new Lemmanisator();
-    @Autowired
+
     private SiteConfig siteConfig;
     @Autowired
     private LemmaRepository lemmaRepository;
