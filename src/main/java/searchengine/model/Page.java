@@ -2,8 +2,7 @@ package searchengine.model;
 
 import jakarta.persistence.*;
 
-import lombok.Data;
-import jakarta.persistence.Index;
+
 import lombok.Getter;
 import lombok.Setter;
 

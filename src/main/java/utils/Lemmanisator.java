@@ -20,8 +20,8 @@ public class Lemmanisator {
 
     public String htmlClearing (String document)
     {
-        String clearingText = Jsoup.parse(document).text();
-        return clearingText;
+        String clearingText;
+        return clearingText = Jsoup.parse(document).text();
     }
     public boolean wordCheck(String word) {
         if (word.matches(REGEXP_WORD)) {
