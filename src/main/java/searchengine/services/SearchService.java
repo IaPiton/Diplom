@@ -90,7 +90,6 @@ public class SearchService {
             }
             lemmaIndex.clear();
             searchDtoList.add(new SearchDto(sites, siteName, urlPage, title, snippetBuilder.toString(), pageValue));
-
         }
         return searchDtoList;
     }
@@ -101,7 +100,6 @@ public class SearchService {
         String html = elements.stream().map(Element::html).collect(Collectors.joining());
         return Jsoup.parse(html).text();
     }
-
 
     public List<String> textLemma(String query) {
         HashMap<String, Integer>searchLemmaMap = lemmanisator.textToLemma(query);
@@ -197,5 +195,4 @@ public class SearchService {
         }
         return wordList;
     }
-
 }

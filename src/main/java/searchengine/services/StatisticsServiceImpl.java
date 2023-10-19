@@ -30,14 +30,12 @@ public class StatisticsServiceImpl implements StatisticsService {
     @Autowired
     private LemmaRepository lemmaRepository;
     private final Random random = new Random();
-
     private final SiteConfig siteConfig;
 
     @Override
     public StatisticsResponse getStatistics() {
         TotalStatistics total = new TotalStatistics(siteRepository.count(), pageRepository.count(),
                 lemmaRepository.count(), true);
-
         List<DetailedStatisticsItem> detailedList = new ArrayList<>();
         siteRepository.findAll().forEach(site -> {
             DetailedStatisticsItem detailed = new DetailedStatisticsItem(site.getUrl(), site.getName(), site.getStatus(),
@@ -51,46 +49,5 @@ public class StatisticsServiceImpl implements StatisticsService {
         return new StatisticsResponse(true, statisticsDate);
     }
 }
-//        String[] statuses = { "INDEXED", "FAILED", "INDEXING" };
-//        String[] errors = {
-//                "Ошибка индексации: главная страница сайта не доступна",
-//                "Ошибка индексации: сайт не доступен",
-//                ""
-//        };
-//
-//        TotalStatistics total = new TotalStatistics();
-//        total.setSites(siteConfig.getSites().size());
-//
-//        total.setIndexing(true);
-//
-//        List<DetailedStatisticsItem> detailed = new ArrayList<>();
-//        List<Site> sitesList = siteConfig.getSites();
-//
-//
-//        for(int i = 0; i < sitesList.size(); i++) {
-//            Site site = sitesList.get(i);
-//            DetailedStatisticsItem item = new DetailedStatisticsItem();
-//            item.setName(site.getName());
-//            item.setUrl(site.getUrl());
-//            int pages = random.nextInt(1_000);
-//            int lemmas = pages * random.nextInt(1_000);
-//            item.setPages(pages);
-//            item.setLemmas(lemmas);
-//            item.setStatus(statuses[i % 3]);
-//            item.setError(errors[i % 3]);
-//            item.setStatusTime(System.currentTimeMillis() -
-//                    (random.nextInt(10_000)));
-//            total.setPages(total.getPages() + pages);
-//            total.setLemmas(total.getLemmas() + lemmas);
-//            detailed.add(item);
-//        }
-//
-//        StatisticsResponse response = new StatisticsResponse();
-//        StatisticsData data = new StatisticsData();
-//        data.setTotal(total);
-//        data.setDetailed(detailed);
-//        response.setStatistics(data);
-//        response.setResult(true);
-//        return response;
-//    }
+
 

@@ -14,6 +14,7 @@ public class Indexes {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private int id;
+
     @ManyToOne()
     @JoinColumn(name = "page_id", referencedColumnName = "id", nullable = false)
     private Page pageByIndex;

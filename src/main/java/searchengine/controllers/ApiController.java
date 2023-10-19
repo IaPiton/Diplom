@@ -30,15 +30,11 @@ import java.util.List;
 public class ApiController {
 
     private final StatisticsService statisticsService;
-
     private final IndexingService indexingService;
-
     private final DateBaseService dateBaseService;
     private final SiteRepository siteRepository;
     private final SiteConfig siteConfig;
     private final SearchService searchService;
-
-
     private SiteConfig sites;
 
     @Autowired
@@ -55,7 +51,6 @@ public class ApiController {
     public ResponseEntity<StatisticsResponse> statistics() {
         return ResponseEntity.ok(statisticsService.getStatistics());
     }
-
 
     @GetMapping("/startIndexing")
     public ResultDto startIndexing() {
@@ -95,8 +90,6 @@ public class ApiController {
         }
         return new ResultDto(true, searchData.size(), searchData, HttpStatus.OK);
     }
-
-
 }
 
 

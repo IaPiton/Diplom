@@ -27,7 +27,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @Service
 @Data
 public class DateBaseService {
-
     @Autowired
     private SiteConfig sites;
     @Autowired

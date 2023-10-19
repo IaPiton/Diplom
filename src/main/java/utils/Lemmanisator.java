@@ -17,7 +17,6 @@ public class Lemmanisator {
     LuceneMorphology luceneMorph = new RussianLuceneMorphology();
 
     public Lemmanisator() throws IOException {
-
     }
 
     public String htmlClearing (String document)

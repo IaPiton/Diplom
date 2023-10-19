@@ -23,7 +23,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ForkJoinPool;
 
-
 @Service
 @Getter
 @Setter
@@ -130,7 +129,6 @@ public class IndexingService {
     }
 
     public void indexingFinish(Site siteInDateBase) {
-
         if (dateBaseService.getIndexingStop().get()) {
             siteInDateBase.setLastError("Индексация остановлена");
             dateBaseService.updateSite(siteInDateBase, Status.FAILED);

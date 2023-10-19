@@ -33,7 +33,7 @@ public interface LemmaRepository extends JpaRepository<Lemma, Integer> {
     @Modifying
     @Query(value = "delete from Lemma l where l.id=:id",
             nativeQuery = true)
-    void deleteLemmaPathByPage( @Param("id") Integer id);
+    void deleteLemmaPathByPage(@Param("id") Integer id);
 
     @Transactional
     @Query(value = "select * from Lemma where lemma.lemma in :lemma and lemma.site_id in :siteId and lemma.frequency < 150", nativeQuery = true)

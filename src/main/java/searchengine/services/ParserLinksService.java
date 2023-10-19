@@ -53,9 +53,6 @@ public class ParserLinksService extends RecursiveAction {
         this.site = site;
     }
 
-    public int getCodeResponse() {
-        return codeResponse;
-    }
     @Override
     protected void compute() {
         if (!dateBaseService.getIndexingStop().get()) {
@@ -87,7 +84,6 @@ public class ParserLinksService extends RecursiveAction {
 
                             tasks.add(task);
                         }
-
                     }
                     for (ParserLinksService task : tasks) {
                         task.join();
@@ -97,21 +93,18 @@ public class ParserLinksService extends RecursiveAction {
                 }catch (ParserConfigurationException | IOException | SQLException ex) {
                     dateBaseService.updateLastError(site, url + " - " + ex.getMessage());
                 }
-
             }
         }
     }
 
     public Document getDocument(String url) throws ParserConfigurationException, SQLException, IOException {
         Document doc = null;
-
         try {
             Connection connection = Jsoup
                     .connect(url)
                     .userAgent(parserConfig.getUseragent())
                     .referrer(parserConfig.getReferrer())
                     .timeout(parserConfig.getTimeout());
-
             doc = connection.get();
             codeResponse = connection.response().statusCode();
           } catch (HttpStatusException | SocketTimeoutException e) {
@@ -125,7 +118,6 @@ public class ParserLinksService extends RecursiveAction {
             e.printStackTrace();
             codeResponse = 404;
         }
-
         return doc;
     }
 }

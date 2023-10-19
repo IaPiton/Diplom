@@ -31,5 +31,5 @@ public interface IndexesRepository  extends JpaRepository<Indexes, Integer> {
     @Transactional
     @Query(value = "select * from Indexes where Indexes.lemma_id in :lemmaId and Indexes.page_id in :pageId", nativeQuery = true)
     List<Indexes> findByPageAndLemmas(@Param("lemmaId") List<Integer> lemmaId,
-                                         @Param("pageId") List<Integer> pageId);
+                                      @Param("pageId") List<Integer> pageId);
 }

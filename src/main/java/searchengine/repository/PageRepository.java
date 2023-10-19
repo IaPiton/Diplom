@@ -24,12 +24,12 @@ public interface PageRepository extends JpaRepository<Page, Long> {
     @Transactional
     @Query(value = "SELECT * FROM Page p WHERE p.path = :url",
             nativeQuery = true)
-    Integer findPathByPage( @Param("url") String path);
+    Integer findPathByPage(@Param("url") String path);
     @Transactional
     @Modifying
     @Query(value = "delete from Page p where p.path=:url",
             nativeQuery = true)
-    void deletePathByPage( @Param("url") String path);
+    void deletePathByPage(@Param("url") String path);
 
     @Transactional
     @Query(value = "SELECT p.code, p.id, p.site_id, p.content, p.path  FROM Page p JOIN Indexes ON p.id = Indexes.page_id WHERE Indexes.lemma_id IN ?", nativeQuery = true)

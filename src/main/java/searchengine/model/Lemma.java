@@ -16,15 +16,15 @@ public class Lemma {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private int id;
+
     @ManyToOne()
     @JoinColumn(name = "site_id", referencedColumnName = "id", nullable = false)
     private Site siteByLemma;
+
     @OneToMany(mappedBy = "lemmaByIndex")
     private Collection<Indexes> indexesById;
 
     @Column(name = "lemma")
     private String lemma;
     private Integer frequency;
-//    @OneToMany(mappedBy = "lemma", cascade = CascadeType.ALL)
-//    private List<Index> index = new ArrayList<>();
 }
