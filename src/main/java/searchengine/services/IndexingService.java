@@ -63,7 +63,7 @@ public class IndexingService {
         CopyOnWriteArraySet<String> linksSet = new CopyOnWriteArraySet<>();
         ParserLinksService parserLinks = new ParserLinksService(siteInDateBase.getUrl() + "/", linksSet, siteInDateBase);
         parseConfig(parserLinks);
-        ForkJoinPool pool = new ForkJoinPool();
+        ForkJoinPool pool = new ForkJoinPool(3);
         pool.invoke(parserLinks);
         indexingFinish(siteInDateBase);
     }

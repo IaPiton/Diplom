@@ -14,10 +14,17 @@ spring:
       ddl-auto: update
 indexing-settings:
   sites:
-    - url: https://wpschool.ru
-      name: Dom
+    - url: https://ria.ru
+      name: Ria.ru
     - url: http://www.playback.ru
       name: PlayBack.Ru
+    - url: https://www.interfax.ru
+      name: Interfax.ru
+    - url: https://vz.ru
+      name: Vz.ru
+    - url: https://www.rbc.ru
+      name: Rbc.ru
+
 configparser:
   useragent: PitonSearchBot/1.0
   referrer: http://www.google.com

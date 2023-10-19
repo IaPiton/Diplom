@@ -80,11 +80,14 @@ public class SearchService {
             StringBuilder snippetBuilder = new StringBuilder();
             List<Integer> lemmaIndex = findLemmaIndex(body,textLemmaList);
             List<String> wordList = getWordsFromContent(body, lemmaIndex);
-
-
-
-
-            snippetBuilder.append(body.substring(lemmaIndex.get(0), lemmaIndex.get(0) + 300));
+            int y = 0;
+            while (y < wordList.size()) {
+                snippetBuilder.append(wordList.get(y)).append("...  ");
+                if (y > 3) {
+                    break;
+                }
+                y++;
+            }
             lemmaIndex.clear();
             searchDtoList.add(new SearchDto(sites, siteName, urlPage, title, snippetBuilder.toString(), pageValue));
 
@@ -153,47 +156,46 @@ public class SearchService {
             lemmaIndex.addAll(lemmanisator.findLemmaIndexInWord(body, lemma));
              i++;
         }
+        Collections.sort(lemmaIndex);
         return lemmaIndex;
     }
 
-public List<String> getWordsFromContent(String content, List<Integer> lemmaIndex){
+    public List<String> getWordsFromContent(String content, List<Integer> lemmaIndex) {
         List<String> wordList = new ArrayList<>();
         int i = 0;
-        while (i < lemmaIndex.size()){
+        int sizeSniper = 3;
+        if (lemmaIndex.size() < sizeSniper) {
+            sizeSniper = lemmaIndex.size();
+        }
+        while (wordList.size() < sizeSniper) {
             int start = lemmaIndex.get(i);
             int end = content.indexOf(" ", start);
             int next = i + 1;
-            int x = lemmaIndex.get(next);
-            int y = lemmaIndex.get(next) - end;
-            System.out.println(start + " - " + end);
+            while (next < lemmaIndex.size() && lemmaIndex.size() >= next) {
+                if (lemmaIndex.get(next) - end < 25) {
+                    end = content.indexOf(" ", lemmaIndex.get(next));
+                    sizeSniper = sizeSniper - 1;
+                }
+                next += 1;
+            }
+            String word = content.substring(start, end);
+            word = word.replaceAll("\\(", "").replaceAll("\\)", "");
+            int sizeTextSniper = 100;
+            if (sizeSniper == 2) {
+                sizeTextSniper = 200;
+            } else if (sizeSniper == 1) {
+                sizeTextSniper = 300;
+            }
+            int x = content.length();
+            if ((end + sizeTextSniper) > content.length()) {
+                sizeTextSniper = content.length() - end;
+            }
+            int endSniper = end + sizeTextSniper;
+            String text = content.substring(start, endSniper).replaceAll(word, "<b>".concat(word).concat("</b>"));
+            wordList.add(text);
+            i++;
         }
-
-//    int i = 0;
-//    while (i < lemmaIndex.size()) {
-//        int start = lemmaIndex.get(i);
-//        int end = content.indexOf(" ", start);
-//        int next = i + 1;
-//        while (next < lemmaIndex.size() && 0 < lemmaIndex.get(next) - end && lemmaIndex.get(next) - end < 5) {
-//            end = content.indexOf(" ", lemmaIndex.get(next));
-//            next += 1;
-//        }
-//        i = next - 1;
-//        String word = content.substring(start, end);
-//        int startIndex;
-//        int nextIndex;
-//        if (content.lastIndexOf(" ", start) != -1) {
-//            startIndex = content.lastIndexOf(" ", start);
-//        } else startIndex = start;
-//        if (content.indexOf(" ", (end + lemmaIndex.size() / (lemmaIndex.size() / 10))) != -1) {
-//            nextIndex = content.indexOf(" ", end + lemmaIndex.size() / 10);
-//        } else nextIndex = content.indexOf(" ", end);
-//        String text = content.substring(startIndex, nextIndex).replaceAll(word, "<b>".concat(word).concat("</b>"));
-//        result.add(text);
-//        i++;
-//    }
-//    result.sort(Comparator.comparing(String::length).reversed());
-
-      return wordList;
-}
+        return wordList;
+    }
 
 }
