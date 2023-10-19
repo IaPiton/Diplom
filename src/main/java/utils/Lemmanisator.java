@@ -7,6 +7,7 @@ import org.jsoup.Jsoup;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Stream;
 
 @Data
 public class Lemmanisator {
@@ -20,17 +21,14 @@ public class Lemmanisator {
 
     public String htmlClearing (String document)
     {
-        String clearingText;
-        return clearingText = Jsoup.parse(document).text();
+        String clearingText = Jsoup.parse(document).text();
+        return clearingText;
     }
     public boolean wordCheck(String word) {
         if (word.matches(REGEXP_WORD)) {
             List<String> wordBaseForms =
                     luceneMorph.getMorphInfo(word);
-            if ((!wordBaseForms.get(0).endsWith("ПРЕДЛ") && (!wordBaseForms.get(0).endsWith("СОЮЗ")) &&
-                    (!wordBaseForms.get(0).endsWith("ЧАСТ")) && (!wordBaseForms.get(0).endsWith("МЕЖД")))) {
-                return true;
-            }
+            return Stream.of("ПРЕДЛ", "СОЮЗ", "ЧАСТ", "МЕЖД").noneMatch(s -> wordBaseForms.get(0).endsWith(s));
         }
         return false;
     }
@@ -46,7 +44,7 @@ public class Lemmanisator {
             {
                 List<String> wordBaseForms = luceneMorph.getNormalForms(word);
 
-                wordBaseForms.forEach(w -> { wordsMap.put(w, wordsMap.getOrDefault(w, 0) + 1);
+                wordBaseForms.forEach((String w) -> { wordsMap.put(w, wordsMap.getOrDefault(w, 0) + 1);
                 });
             }
         }
