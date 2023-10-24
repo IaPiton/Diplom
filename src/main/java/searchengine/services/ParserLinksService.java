@@ -71,7 +71,7 @@ public class ParserLinksService extends RecursiveAction {
                         }
                         for (String childLink : linksChildren) {
                             try {
-                                Thread.sleep(150);
+                                Thread.sleep(350);
                             } catch (InterruptedException e) { log.info("Произошло прерывание потока");
                             }
                             ParserLinksService task = new ParserLinksService(childLink, linksSet, site);

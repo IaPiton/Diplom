@@ -38,13 +38,13 @@ public interface LemmaRepository extends JpaRepository<Lemma, Integer> {
                                                    @Param("siteId") List<Integer> siteId);
 
     boolean existsByLemma(String lemma);
-    @Transactional
+@Transactional
     @Modifying (clearAutomatically = true, flushAutomatically = true)
     @Query(value = "UPDATE Lemma l SET l.frequency = l.frequency + 1 WHERE l.site_id = :siteId AND l.lemma = :lemma", nativeQuery = true)
     void updateLemmaFrequency(@Param("siteId") Integer site_id, @Param("lemma") String lemma);
 
 
-    @Transactional
+
     @Query(value = "select * from Lemma l where l.lemma = ?1", nativeQuery = true)
     Lemma idToLemma(String lemma);
 }

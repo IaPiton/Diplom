@@ -24,8 +24,6 @@ import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ForkJoinPool;
 
 @Service
-@Getter
-@Setter
 @Data
 @Slf4j
 public class IndexingService {
@@ -107,8 +105,9 @@ public class IndexingService {
         Site siteInDateBase = updatingSite(siteForIndex);
         CopyOnWriteArraySet<String> linksSet = new CopyOnWriteArraySet<>();
         ParserLinksService parserLinks = new ParserLinksService(url, linksSet, siteInDateBase);
-        ForkJoinPool pool = new ForkJoinPool(3);
+        ForkJoinPool pool = new ForkJoinPool();
         parseConfig(parserLinks);
+
         pool.invoke(parserLinks);
         indexingFinish(siteInDateBase);
     return new ResultDto(true);

@@ -39,8 +39,8 @@ public class DateBaseService {
     private IndexesRepository indexesRepository;
     @Autowired
     private LemmaRepository lemmaRepository;
-    private volatile AtomicBoolean indexingRun = new AtomicBoolean();
-    private volatile AtomicBoolean indexingStop = new AtomicBoolean();
+    private  AtomicBoolean indexingRun = new AtomicBoolean();
+    private  AtomicBoolean indexingStop = new AtomicBoolean();
 
     @Transactional(readOnly = true)
     public Site findSiteByName(Site site) {
@@ -67,7 +67,7 @@ public class DateBaseService {
         indexesRepository.deleteAll();
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public Page addPageToDateBase(String path, int code, String content, Site site, int pageId) {
         Page page = new Page();
         if (!(pageId == 0)) {
@@ -97,30 +97,30 @@ public class DateBaseService {
         }
         updateSite(site, Status.INDEXING);
     }
-    @Transactional
+
     public void addLemmaToDateBase(String lemmas, int rank, Site site, Page page) {
          Lemma lemma = new Lemma();
             if(lemmaRepository.existsByLemma(lemmas)){
                lemmaRepository.updateLemmaFrequency(site.getId(), lemmas);
                lemma = lemmaRepository.idToLemma(lemmas);
-           }else {
+           } else {
                 lemma.setSiteByLemma(site);
                 lemma.setLemma(lemmas);
                 lemma.setFrequency(1);
                 lemmaRepository.saveAndFlush(lemma);
            }
-           indexAddToDB(lemma, rank, page);
+        indexAddToDB(lemma, rank, page);
     }
-    @Transactional
+
     public void indexAddToDB(Lemma lemma, int rank, Page page) {
             Indexes index = new Indexes();
             index.setPageByIndex(page);
             index.setLemmaByIndex(lemma);
             index.setRankLemma(rank);
-            indexesRepository.save(index);
+            indexesRepository.saveAndFlush(index);
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public Site updateLastError(Site site, String errorMessage) {
         site.setLastError(errorMessage);
         site.setStatusTime(LocalDateTime.now());
