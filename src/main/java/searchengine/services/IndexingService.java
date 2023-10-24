@@ -62,7 +62,7 @@ public class IndexingService {
         CopyOnWriteArraySet<String> linksSet = new CopyOnWriteArraySet<>();
         ParserLinksService parserLinks = new ParserLinksService(siteInDateBase.getUrl() + "/", linksSet, siteInDateBase);
         parseConfig(parserLinks);
-        ForkJoinPool pool = new ForkJoinPool(3);
+        ForkJoinPool pool = new ForkJoinPool();
         pool.invoke(parserLinks);
         indexingFinish(siteInDateBase);
     }
@@ -107,16 +107,12 @@ public class IndexingService {
         Site siteInDateBase = updatingSite(siteForIndex);
         CopyOnWriteArraySet<String> linksSet = new CopyOnWriteArraySet<>();
         ParserLinksService parserLinks = new ParserLinksService(url, linksSet, siteInDateBase);
-        ForkJoinPool pool = new ForkJoinPool();
+        ForkJoinPool pool = new ForkJoinPool(3);
         parseConfig(parserLinks);
         pool.invoke(parserLinks);
         indexingFinish(siteInDateBase);
     return new ResultDto(true);
 }
-
-
-
-
     public ResultDto stopIndexing() {
         if (!dateBaseService.getIndexingRun().get()) {
             new ResultDto(false, "Индексация не запущена").getError();

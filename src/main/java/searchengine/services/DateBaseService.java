@@ -1,5 +1,6 @@
 package searchengine.services;
 
+import jakarta.persistence.EntityManager;
 import lombok.Data;
 
 
@@ -18,6 +19,7 @@ import searchengine.repository.SiteRepository;
 import utils.Lemmanisator;
 
 import java.io.IOException;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -51,12 +53,10 @@ public class DateBaseService {
         site.setStatusTime(LocalDateTime.now());
         return siteRepository.saveAndFlush(site);
     }
-
     @Transactional
     public void deleteAllPages() {
         pageRepository.deleteAll();
     }
-
     @Transactional
     public void deleteAllLemma() {
         lemmaRepository.deleteAll();
@@ -92,39 +92,32 @@ public class DateBaseService {
             Lemmanisator lemmanisator = new Lemmanisator();
             HashMap<String, Integer> lemma = lemmanisator.textToLemma(content);
             for (String lemmas : lemma.keySet()) {
-                HashMap<String, Integer> lemmaMap = new HashMap<>();
-                lemmaMap.put(lemmas, lemma.get(lemmas));
-                HashMap<Integer, Float> mapId = addLemmaToDateBase(lemmaMap, site);
-                indexAddToDB(page, mapId, site);
+                addLemmaToDateBase(lemmas, lemma.get(lemmas),  site, page);
             }
         }
         updateSite(site, Status.INDEXING);
     }
-
     @Transactional
-    public HashMap<Integer, Float> addLemmaToDateBase(HashMap<String, Integer> lemmaMap, Site site) {
-        HashMap<Integer, Float> mapId = new HashMap<>();
-        Lemma lemma = new Lemma();
-        for (String lemmas : lemmaMap.keySet()) {
-            lemma.setSiteByLemma(site);
-            lemma.setLemma(lemmas);
-            lemma.setFrequency(lemmaMap.get(lemmas));
-            lemmaRepository.saveAndFlush(lemma);
-            int idLemma = lemma.getId();
-            mapId.put(idLemma, lemmaMap.get(lemmas).floatValue());
-        }
-        return mapId;
+    public void addLemmaToDateBase(String lemmas, int rank, Site site, Page page) {
+         Lemma lemma = new Lemma();
+            if(lemmaRepository.existsByLemma(lemmas)){
+               lemmaRepository.updateLemmaFrequency(site.getId(), lemmas);
+               lemma = lemmaRepository.idToLemma(lemmas);
+           }else {
+                lemma.setSiteByLemma(site);
+                lemma.setLemma(lemmas);
+                lemma.setFrequency(1);
+                lemmaRepository.saveAndFlush(lemma);
+           }
+           indexAddToDB(lemma, rank, page);
     }
-
     @Transactional
-    public void indexAddToDB(Page page, HashMap<Integer, Float> idMap, Site site) {
-        idMap.forEach((lemmaId, rank) -> {
+    public void indexAddToDB(Lemma lemma, int rank, Page page) {
             Indexes index = new Indexes();
             index.setPageByIndex(page);
-            index.setLemmaByIndex(lemmaRepository.findByIdAndSiteByLemma(lemmaId, site));
+            index.setLemmaByIndex(lemma);
             index.setRankLemma(rank);
             indexesRepository.save(index);
-        });
     }
 
     @Transactional
@@ -133,7 +126,6 @@ public class DateBaseService {
         site.setStatusTime(LocalDateTime.now());
         return siteRepository.save(site);
     }
-
     @Transactional
     public Integer findPathByPage(String path) {
         Integer result = pageRepository.findPathByPage(path);

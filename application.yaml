@@ -6,7 +6,7 @@ spring:
     hikari:
       minIdle: 10
       idle-timeout: 10000
-      maximumPoolSize: 30
+      maximumPoolSize: 10
   jpa:
     hibernate:
       dialect: org.hibernate.dialect.MySQLDialect
@@ -18,12 +18,12 @@ indexing-settings:
       name: Ria.ru
     - url: http://www.playback.ru
       name: PlayBack.Ru
-    - url: https://www.interfax.ru
-      name: Interfax.ru
-    - url: https://vz.ru
-      name: Vz.ru
-    - url: https://www.rbc.ru
-      name: Rbc.ru
+#    - url: https://www.interfax.ru
+#      name: Interfax.ru
+#    - url: https://vz.ru
+#      name: Vz.ru
+#    - url: https://www.rbc.ru
+#      name: Rbc.ru
 
 configparser:
   useragent: PitonSearchBot/1.0
