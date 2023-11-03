@@ -27,19 +27,14 @@ public class ApiController {
 
     private final StatisticsService statisticsService;
     private final IndexingService indexingService;
-    private final DateBaseService dateBaseService;
     private final SiteRepository siteRepository;
-    private final SiteConfig siteConfig;
     private final SearchService searchService;
-    private SiteConfig sites;
 
-    @Autowired
-    public ApiController(StatisticsService statisticsService, IndexingService indexingService, DateBaseService dateBaseService, SiteRepository siteRepository, SiteConfig siteConfig, SearchService searchService) {
+    public ApiController(StatisticsService statisticsService, IndexingService indexingService,
+                         SiteRepository siteRepository, SearchService searchService) {
         this.statisticsService = statisticsService;
         this.indexingService = indexingService;
-        this.dateBaseService = dateBaseService;
         this.siteRepository = siteRepository;
-        this.siteConfig = siteConfig;
         this.searchService = searchService;
     }
 
@@ -74,6 +69,9 @@ public class ApiController {
             @RequestParam(value = "offset", defaultValue = "0", required = false) int offset,
             @RequestParam(value = "limit", defaultValue = "20", required = false) int limit) {
         List<SearchDto> searchData;
+        if (query.isEmpty()){
+            return new ResultDto(false, "Задан пустой поисковый запрос");
+        }
         if (!(site == null)) {
             if (siteRepository.findByUrl(site) == null) {
                 return new ResultDto(false, "Данная страница находится за пределами сайтов,\n" +

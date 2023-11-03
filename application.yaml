@@ -23,12 +23,9 @@ indexing-settings:
       name: Музей Ямщика
     - url: http://www.playback.ru
       name: PlayBack.Ru
-#    - url: https://www.interfax.ru
-#      name: Interfax.ru
-#    - url: https://vz.ru
-#      name: Vz.ru
-#    - url: https://www.rbc.ru
-#      name: Rbc.ru
+    - url: https://volochek.life
+      name: Volochek.life
+
 
 configparser:
   useragent: PitonSearchBot/1.0

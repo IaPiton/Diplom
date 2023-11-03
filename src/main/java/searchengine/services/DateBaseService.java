@@ -1,6 +1,5 @@
 package searchengine.services;
 
-import jakarta.persistence.EntityManager;
 import lombok.Data;
 
 
@@ -20,15 +19,10 @@ import utils.Lemmanisator;
 
 import java.io.IOException;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 @Service
 @Data
@@ -43,7 +37,6 @@ public class DateBaseService {
     private IndexesRepository indexesRepository;
     @Autowired
     private LemmaRepository lemmaRepository;
-
 
     @Transactional(readOnly = true)
     public Site findSiteByName(Site site) {
@@ -141,24 +134,10 @@ public class DateBaseService {
         return result;
     }
 
-    @Transactional
-    public void deletePathByPage(Integer idPage) {
-        pageRepository.deletePathByPage(idPage);
-    }
-
-    @Transactional
-    public void deleteLemmaPathByPage(Integer id) {
-        lemmaRepository.deleteLemmaPathByPage(id);
-    }
-
-    @Transactional
-    public void deleteIndexPathByPage(Integer id) {
-        indexesRepository.deleteIndexPathByPage(id);
-    }
 
     public List<Integer> lemmaIdByPath(Integer idPath) {
-        List<Integer> lemmaIdByPat = indexesRepository.findLemmaByPath(idPath);
-        return lemmaIdByPat;
+        List<Integer> lemmaIdByPath = indexesRepository.findLemmaByPath(idPath);
+        return lemmaIdByPath;
     }
     public List<Integer> siteId (List<Site> site){
         List<Integer> siteId = new ArrayList<>();
@@ -167,29 +146,13 @@ public class DateBaseService {
         }
         return siteId;
     }
-    public List<Page> pageListByLemma (List<Lemma> lemmaList){
-        List<Page> pageList = new ArrayList<>();
-        List<Integer> lemmaId = lemmaId(lemmaList);
-        pageList = pageRepository.pageInIndex(lemmaId);
-        return pageList;
-    }
+
     public List<Integer> lemmaId (List<Lemma> lemmaList){
         List<Integer> lemmaId = new ArrayList<>();
         for (Lemma lemma : lemmaList){
             lemmaId.add(lemma.getId());
         }
         return lemmaId;
-    }
-
-    public List<Indexes> indexesListByLemmaByPage (List<Lemma> lemmaList, List<Page> pageList){
-        List<Indexes> indexesList = new ArrayList<>();
-        List<Integer> lemmaId = lemmaId(lemmaList);
-        List<Integer> pageId = new ArrayList<>();
-        for (Page page : pageList){
-            pageId.add(page.getId());
-        }
-        indexesList = indexesRepository.findByPageAndLemmas(lemmaId, pageId);
-        return indexesList;
     }
 
 }

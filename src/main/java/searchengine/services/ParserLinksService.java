@@ -22,7 +22,9 @@ import java.io.IOException;
 import java.net.SocketTimeoutException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.RecursiveAction;
 
@@ -38,7 +40,6 @@ public class ParserLinksService extends RecursiveAction {
     private ParserConfig parserConfig;
     @Autowired
     private DateBaseService dateBaseService;
-
 
 
     public ParserLinksService() {
@@ -72,7 +73,8 @@ public class ParserLinksService extends RecursiveAction {
                         for (String childLink : linksChildren) {
                             try {
                                 Thread.sleep(350);
-                            } catch (InterruptedException e) { log.info("Произошло прерывание потока");
+                            } catch (InterruptedException e) {
+                                log.info("Произошло прерывание потока");
                             }
                             ParserLinksService task = new ParserLinksService(childLink, linksSet, site);
                             task.setParserConfig(parserConfig);
@@ -87,7 +89,7 @@ public class ParserLinksService extends RecursiveAction {
                     }
                 } catch (NullPointerException ex) {
                     dateBaseService.updateLastError(site, url + " - " + "Страница пустая");
-                }catch (ParserConfigurationException | IOException | SQLException ex) {
+                } catch (ParserConfigurationException | IOException | SQLException ex) {
                     dateBaseService.updateLastError(site, url + " - " + ex.getMessage());
                 }
             }
@@ -104,10 +106,10 @@ public class ParserLinksService extends RecursiveAction {
                     .timeout(parserConfig.getTimeout());
             doc = connection.get();
             codeResponse = connection.response().statusCode();
-          } catch (HttpStatusException | SocketTimeoutException e) {
+        } catch (HttpStatusException | SocketTimeoutException e) {
             codeResponse = 503;
             System.out.println(e.getLocalizedMessage());
-          } catch (UnsupportedMimeTypeException e) {
+        } catch (UnsupportedMimeTypeException e) {
 
             codeResponse = 404;
             System.out.println(e.getMessage());

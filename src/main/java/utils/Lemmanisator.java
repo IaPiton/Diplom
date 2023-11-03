@@ -19,11 +19,11 @@ public class Lemmanisator {
     public Lemmanisator() throws IOException {
     }
 
-    public String htmlClearing (String document)
-    {
+    public String htmlClearing(String document) {
         String clearingText = Jsoup.parse(document).text();
         return clearingText;
     }
+
     public boolean wordCheck(String word) {
         if (word.matches(REGEXP_WORD)) {
             List<String> wordBaseForms =
@@ -32,19 +32,18 @@ public class Lemmanisator {
         }
         return false;
     }
-    public HashMap<String, Integer> textToLemma (String content)
-    {
+
+    public HashMap<String, Integer> textToLemma(String content) {
         wordsMap = new HashMap<>();
         String text = htmlClearing(content);
         text = content.trim();
         String[] words = text.toLowerCase().split(REGEXP_TEXT);
-        for (String word : words)
-        {
-            if (wordCheck(word))
-            {
+        for (String word : words) {
+            if (wordCheck(word)) {
                 List<String> wordBaseForms = luceneMorph.getNormalForms(word);
 
-                wordBaseForms.forEach((String w) -> { wordsMap.put(w, wordsMap.getOrDefault(w, 0) + 1);
+                wordBaseForms.forEach((String w) -> {
+                    wordsMap.put(w, wordsMap.getOrDefault(w, 0) + 1);
                 });
             }
         }
@@ -68,11 +67,12 @@ public class Lemmanisator {
         Collections.sort(listLemmaIndex);
         return listLemmaIndex;
     }
-    public List<String> getLemma (String word){
+
+    public List<String> getLemma(String word) {
         List<String> lemmaList = new ArrayList<>();
-        if(wordCheck(word)){
+        if (wordCheck(word)) {
             lemmaList = luceneMorph.getNormalForms(word);
         }
-        return  lemmaList;
+        return lemmaList;
     }
 }

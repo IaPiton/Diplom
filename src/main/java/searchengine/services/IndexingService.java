@@ -46,29 +46,38 @@ public class IndexingService {
     private static AtomicBoolean indexingRun = new AtomicBoolean(false);
     @Getter
     private static AtomicBoolean indexingStop = new AtomicBoolean(false);
+    int countSite = 0;
+    int finishedSite = 0;
+
     public ResultDto startIndexing() {
-     if (indexingRun.get()) {
-         new ResultDto(false, "Индексация уже запущена");
-         log.info("Попытка повторного запуска индексации");
-     } else {
-         log.info("Индексация запущена");
-         ArrayList<Site> sites = siteConfig.getSites();
-         indexingRun.set(true);
-         indexingStop.set(false);
-         dateBaseService.deleteAllIndexes();
-         dateBaseService.deleteAllPages();
-         dateBaseService.deleteAllLemma();
-         for (Site site : sites) {
-             CompletableFuture.runAsync(() -> {
-                 indexingSite(site);
-             }, ForkJoinPool.commonPool());
-         }
-     }
+        if (indexingRun.get()) {
+            new ResultDto(false, "Индексация уже запущена");
+            log.info("Попытка повторного запуска индексации");
+        } else {
+            log.info("Индексация запущена");
+            ArrayList<Site> sites = siteConfig.getSites();
+            indexingRun.set(true);
+            indexingStop.set(false);
+            dateBaseService.deleteAllIndexes();
+            dateBaseService.deleteAllPages();
+            dateBaseService.deleteAllLemma();
+            for (Site site : sites) {
+                countSite++;
+                CompletableFuture.runAsync(() -> {
+                    try {
+                        indexingSite(site);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                }, ForkJoinPool.commonPool());
+            }
+        }
+
         return new ResultDto(true);
     }
 
     @Async
-    public void indexingSite(Site siteForIndex) {
+    public void indexingSite(Site siteForIndex) throws InterruptedException {
         Site siteInDateBase = updatingSite(siteForIndex);
         CopyOnWriteArraySet<String> linksSet = new CopyOnWriteArraySet<>();
         ParserLinksService parserLinks = new ParserLinksService(siteInDateBase.getUrl() + "/", linksSet, siteInDateBase);
@@ -76,21 +85,24 @@ public class IndexingService {
         ForkJoinPool pool = new ForkJoinPool(Runtime.getRuntime().availableProcessors());
         pool.invoke(parserLinks);
         indexingFinish(siteInDateBase);
+        if (countSite == finishedSite) {
+            indexingRun.set(false);
+        }
     }
+
     public ResultDto startIndexingPage(String url) {
         if (indexingRun.get()) {
-            return new ResultDto(false, "Индексация уже запущена, дождитесь " +
-                    "окончания индексации или остановите ее");
+            return new ResultDto(false, "Индексация уже запущена, дождитесь " + "окончания индексации или остановите ее");
         } else {
             ArrayList<Site> sites = siteConfig.getSites();
             for (Site siteForIndex : sites) {
                 if (url.toLowerCase().contains(siteForIndex.getUrl())) {
                     log.info("Страница - " + url + " - добавлена на переиндексацию");
                     indexingPage(url, siteForIndex);
-                    return new ResultDto(true, "Страница - " + url + " - добавлена на переиндексацию");}
+                    return new ResultDto(true, "Страница - " + url + " - добавлена на переиндексацию");
+                }
             }
-            return new ResultDto(false, "Данная страница находится " +
-                    "за пределами сайтов, указаных в конфигурационном файле.");
+            return new ResultDto(false, "Данная страница находится " + "за пределами сайтов, указаных в конфигурационном файле.");
         }
     }
 
@@ -122,8 +134,10 @@ public class IndexingService {
         parseConfig(parserLinks);
         pool.invoke(parserLinks);
         indexingFinish(siteInDateBase);
-    return new ResultDto(true);
-}
+        indexingRun.set(false);
+        return new ResultDto(true);
+    }
+
     public ResultDto stopIndexing() {
         if (!indexingRun.get()) {
             new ResultDto(false, "Индексация не запущена").getError();
@@ -136,14 +150,15 @@ public class IndexingService {
     }
 
     public void indexingFinish(Site siteInDateBase) {
+        finishedSite++;
         if (indexingStop.get()) {
             siteInDateBase.setLastError("Индексация остановлена");
             dateBaseService.updateSite(siteInDateBase, Status.FAILED);
         } else {
             dateBaseService.updateSite(siteInDateBase, Status.INDEXED);
         }
-log.info("Индексация завершена");
-       indexingRun.set(false);
+        log.info("Индексация сайта " + siteInDateBase.getName() + " завершена");
+
     }
 
     public void parseConfig(ParserLinksService parserLinks) {

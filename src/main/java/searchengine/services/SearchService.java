@@ -5,7 +5,6 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -13,7 +12,6 @@ import org.springframework.stereotype.Service;
 import searchengine.config.SiteConfig;
 import searchengine.dto.SearchDto;
 import searchengine.model.Indexes;
-import searchengine.model.Lemma;
 import searchengine.model.Page;
 import searchengine.model.Site;
 import searchengine.repository.IndexesRepository;
@@ -28,17 +26,13 @@ import java.util.stream.Collectors;
 @Service
 public class SearchService {
     Lemmanisator lemmanisator = new Lemmanisator();
-    private SiteConfig siteConfig;
-    @Autowired
-    private LemmaRepository lemmaRepository;
     @Autowired
     private SiteRepository siteRepository;
     @Autowired
     private DateBaseService dateBaseService;
     @Autowired
     private IndexesRepository indexesRepository;
-    @Autowired
-    private PageRepository pageRepository;
+
     public SearchService() throws IOException {
     }
 

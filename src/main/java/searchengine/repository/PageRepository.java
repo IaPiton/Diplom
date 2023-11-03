@@ -34,7 +34,5 @@ public interface PageRepository extends JpaRepository<Page, Long> {
     @Transactional
     @Query(value = "SELECT p.code, p.id, p.site_id, p.content, p.path  FROM Page p JOIN Indexes ON p.id = Indexes.page_id WHERE Indexes.page_id IN ?", nativeQuery = true)
     List<Page> pageInIndex(List<Integer> lemmaId);
-
-
 }
 
