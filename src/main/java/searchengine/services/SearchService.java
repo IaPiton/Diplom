@@ -5,6 +5,10 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import searchengine.config.SiteConfig;
 import searchengine.dto.SearchDto;
@@ -12,7 +16,9 @@ import searchengine.model.Indexes;
 import searchengine.model.Lemma;
 import searchengine.model.Page;
 import searchengine.model.Site;
+import searchengine.repository.IndexesRepository;
 import searchengine.repository.LemmaRepository;
+import searchengine.repository.PageRepository;
 import searchengine.repository.SiteRepository;
 import utils.Lemmanisator;
 import java.io.IOException;
@@ -22,7 +28,6 @@ import java.util.stream.Collectors;
 @Service
 public class SearchService {
     Lemmanisator lemmanisator = new Lemmanisator();
-
     private SiteConfig siteConfig;
     @Autowired
     private LemmaRepository lemmaRepository;
@@ -30,7 +35,10 @@ public class SearchService {
     private SiteRepository siteRepository;
     @Autowired
     private DateBaseService dateBaseService;
-
+    @Autowired
+    private IndexesRepository indexesRepository;
+    @Autowired
+    private PageRepository pageRepository;
     public SearchService() throws IOException {
     }
 
@@ -48,12 +56,16 @@ public class SearchService {
 
     public List<SearchDto> createSearchPage(List<Integer> siteId, String query, int offset, int limit) {
         List<String> textLemmaList = textLemma(query);
-        List<Lemma> foundLemmaList = lemmaRepository.findByLemmaAndSiteOrderByFrequency(textLemmaList, siteId);
-        List<Page> pageList = dateBaseService.pageListByLemma(foundLemmaList);
-        List<Indexes> indexesList = dateBaseService.indexesListByLemmaByPage(foundLemmaList, pageList);
-        HashMap<Page, Float> relevanceMap = relevanceMap(pageList, indexesList);
-        LinkedHashMap<Page, Float> relativeRelevanceMap = relativeRelevanceMap(relevanceMap, offset, limit);
-        List<SearchDto> searchDtoList = createSearchDtoList(relativeRelevanceMap, textLemmaList);
+        Pageable firstPageWithLimitElements = PageRequest.of(offset, limit, Sort.by("rank_lemma" ).descending());
+        List<Indexes> indexesListTest = indexesRepository.findIndexByLemma(textLemmaList, siteId, firstPageWithLimitElements);
+        List<Page> pageList = new ArrayList<>();
+        for (Indexes indexes : indexesListTest){
+            pageList.add(indexes.getPageByIndex());
+        }
+       HashMap<Page, Float> relevanceMap = relevanceMap(pageList, indexesListTest);
+        LinkedHashMap<Page, Float> relativeRelevanceMap = relativeRelevanceMap(relevanceMap);
+       List<SearchDto> searchDtoList = createSearchDtoList(relativeRelevanceMap, textLemmaList);
+
         return searchDtoList;
     }
 
@@ -120,7 +132,7 @@ public class SearchService {
         return relevanceMap;
     }
 
-    public LinkedHashMap<Page, Float> relativeRelevanceMap(HashMap<Page, Float> relevanceMap, int offset, int limit) {
+    public LinkedHashMap<Page, Float> relativeRelevanceMap(HashMap<Page, Float> relevanceMap) {
         Map<Page, Float> allRelevanceMap = new HashMap<>();
         relevanceMap.keySet().forEach(page -> {
             float relevance = relevanceMap.get(page) / Collections.max(relevanceMap.values());
@@ -130,9 +142,8 @@ public class SearchService {
         sortList.sort(Map.Entry.comparingByValue(Comparator.reverseOrder()));
         LinkedHashMap<Page, Float> relativeRelevanceMap = new LinkedHashMap<>();
         Map.Entry<Page, Float> pageFloatEntry;
-        int y = offset;
-        limit = sortList.size() < limit ?  limit = sortList.size() : limit;
-        while (y < limit) {
+        int y = 0;
+        while (y <sortList.size()) {
             pageFloatEntry = sortList.get(y);
             relativeRelevanceMap.putIfAbsent(pageFloatEntry.getKey(), pageFloatEntry.getValue());
             y++;

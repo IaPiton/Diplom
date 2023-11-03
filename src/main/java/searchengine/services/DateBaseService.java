@@ -20,6 +20,10 @@ import utils.Lemmanisator;
 
 import java.io.IOException;
 
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -98,43 +102,49 @@ public class DateBaseService {
         updateSite(site, Status.INDEXING);
     }
 
-    public void addLemmaToDateBase(String lemmas, int rank, Site site, Page page) {
-         Lemma lemma = new Lemma();
-            if(lemmaRepository.existsByLemma(lemmas)){
-               lemmaRepository.updateLemmaFrequency(site.getId(), lemmas);
-               lemma = lemmaRepository.idToLemma(lemmas);
-           } else {
-                lemma.setSiteByLemma(site);
-                lemma.setLemma(lemmas);
-                lemma.setFrequency(1);
-                lemmaRepository.saveAndFlush(lemma);
-           }
-        indexAddToDB(lemma, rank, page);
+    public  void addLemmaToDateBase(String lemmas, int rank, Site site, Page page) {
+    Lemma lemma = new Lemma();
+        if (!lemmaRepository.existsByLemmaAndSiteByLemma(lemmas, site)) {
+            lemma.setSiteByLemma(site);
+            lemma.setLemma(lemmas);
+            lemma.setFrequency(1);
+            lemmaRepository.saveAndFlush(lemma);
+            indexAddToDB(lemmas, rank, page, site);
+            return;
+        }
+        updateLemma(lemmas, rank, page, site);
+
     }
 
-    public void indexAddToDB(Lemma lemma, int rank, Page page) {
+
+    public synchronized void updateLemma (String lemmas, int rank, Page page, Site site){
+        lemmaRepository.updateLemmaFrequency(site, lemmas);
+        indexAddToDB(lemmas, rank, page, site);
+    }
+    public void indexAddToDB(String lemmas, int rank, Page page, Site site) {
             Indexes index = new Indexes();
             index.setPageByIndex(page);
-            index.setLemmaByIndex(lemma);
+            index.setLemmaByIndex(lemmaRepository.idToLemma(lemmas, site.getId()));
             index.setRankLemma(rank);
             indexesRepository.saveAndFlush(index);
     }
 
-    @Transactional(readOnly = true)
+
+    @Transactional()
     public Site updateLastError(Site site, String errorMessage) {
         site.setLastError(errorMessage);
         site.setStatusTime(LocalDateTime.now());
         return siteRepository.save(site);
     }
     @Transactional
-    public Integer findPathByPage(String path) {
-        Integer result = pageRepository.findPathByPage(path);
+    public List<Integer> findPathByPage(String path) {
+        List<Integer> result = pageRepository.findPathByPage(path);
         return result;
     }
 
     @Transactional
-    public void deletePathByPage(String path) {
-        pageRepository.deletePathByPage(path);
+    public void deletePathByPage(Integer idPage) {
+        pageRepository.deletePathByPage(idPage);
     }
 
     @Transactional
@@ -148,7 +158,7 @@ public class DateBaseService {
     }
 
     public List<Integer> lemmaIdByPath(Integer idPath) {
-        List<Integer> lemmaIdByPat = indexesRepository.lemmaIdByPath(idPath);
+        List<Integer> lemmaIdByPat = indexesRepository.findLemmaByPath(idPath);
         return lemmaIdByPat;
     }
     public List<Integer> siteId (List<Site> site){

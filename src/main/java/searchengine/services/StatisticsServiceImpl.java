@@ -29,13 +29,14 @@ public class StatisticsServiceImpl implements StatisticsService {
     private PageRepository pageRepository;
     @Autowired
     private LemmaRepository lemmaRepository;
-    private final Random random = new Random();
+
     private final SiteConfig siteConfig;
 
     @Override
     public StatisticsResponse getStatistics() {
         TotalStatistics total = new TotalStatistics(siteRepository.count(), pageRepository.count(),
                 lemmaRepository.count(), true);
+
         List<DetailedStatisticsItem> detailedList = new ArrayList<>();
         siteRepository.findAll().forEach(site -> {
             DetailedStatisticsItem detailed = new DetailedStatisticsItem(site.getUrl(), site.getName(), site.getStatus(),

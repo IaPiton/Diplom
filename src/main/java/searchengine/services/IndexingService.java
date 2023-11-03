@@ -15,6 +15,9 @@ import searchengine.config.SiteConfig;
 import searchengine.dto.ResultDto;
 import searchengine.model.Site;
 import searchengine.model.Status;
+import searchengine.repository.IndexesRepository;
+import searchengine.repository.LemmaRepository;
+import searchengine.repository.PageRepository;
 
 
 import java.util.ArrayList;
@@ -33,6 +36,12 @@ public class IndexingService {
     private final DateBaseService dateBaseService;
     @Autowired
     private SiteConfig siteConfig;
+    @Autowired
+    private LemmaRepository lemmaRepository;
+    @Autowired
+    private IndexesRepository indexesRepository;
+    @Autowired
+    private PageRepository pageRepository;
 
     public ResultDto startIndexing() {
      if (dateBaseService.getIndexingRun().get()) {
@@ -60,7 +69,7 @@ public class IndexingService {
         CopyOnWriteArraySet<String> linksSet = new CopyOnWriteArraySet<>();
         ParserLinksService parserLinks = new ParserLinksService(siteInDateBase.getUrl() + "/", linksSet, siteInDateBase);
         parseConfig(parserLinks);
-        ForkJoinPool pool = new ForkJoinPool();
+        ForkJoinPool pool = new ForkJoinPool(Runtime.getRuntime().availableProcessors());
         pool.invoke(parserLinks);
         indexingFinish(siteInDateBase);
     }
@@ -75,16 +84,15 @@ public class IndexingService {
             ArrayList<Site> sites = siteConfig.getSites();
             for (Site siteForIndex : sites) {
                 if (url.toLowerCase().contains(siteForIndex.getUrl())) {
-                    resultResponse = true;
+
                     log.info("Страница - " + url + " - добавлена на переиндексацию");
                     indexingPage(url, siteForIndex);
-                }else {
-                    resultResponse = false;
-                    result =  "Данная страница находится " +
-                            "за пределами сайтов, указаных в конфигурационном файле.";
-                    log.info(result);
+                    return new ResultDto(true);
                 }
+
             }
+            return new ResultDto(false, "Данная страница находится " +
+                    "за пределами сайтов, указаных в конфигурационном файле.");
         }
         return new ResultDto(resultResponse, result);
     }
@@ -94,20 +102,27 @@ public class IndexingService {
         dateBaseService.getIndexingStop().compareAndSet(true, false);
         String path = url.substring(url.indexOf('/', url.indexOf(".")));
         if (!(dateBaseService.findPathByPage(path) == null)) {
-            Integer idPath = dateBaseService.findPathByPage(path);
-            List<Integer> lemmaId = dateBaseService.lemmaIdByPath(idPath);
-            for (Integer id : lemmaId) {
-                dateBaseService.deleteIndexPathByPage(id);
-                dateBaseService.deleteLemmaPathByPage(id);
+            List<Integer> idPath = dateBaseService.findPathByPage(path);
+            for (Integer idPage : idPath) {
+                List<Integer> lemmaId = dateBaseService.lemmaIdByPath(idPage);
+                for (Integer id : lemmaId) {
+                    indexesRepository.deleteIndexPathByPage(id);
+                    if (lemmaRepository.frequencyById(id) == 1) {
+                        lemmaRepository.deleteLemmaPathByPage(id);
+                    } else {
+                        lemmaRepository.updateLemmaFrequencyDelete(id);
+                    }
+
+                }
+
+                pageRepository.deletePathByPage(idPage);
             }
-            dateBaseService.deletePathByPage(path);
         }
         Site siteInDateBase = updatingSite(siteForIndex);
         CopyOnWriteArraySet<String> linksSet = new CopyOnWriteArraySet<>();
         ParserLinksService parserLinks = new ParserLinksService(url, linksSet, siteInDateBase);
-        ForkJoinPool pool = new ForkJoinPool();
+        ForkJoinPool pool = new ForkJoinPool(Runtime.getRuntime().availableProcessors());
         parseConfig(parserLinks);
-
         pool.invoke(parserLinks);
         indexingFinish(siteInDateBase);
     return new ResultDto(true);

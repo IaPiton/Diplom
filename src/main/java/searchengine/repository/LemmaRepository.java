@@ -37,14 +37,26 @@ public interface LemmaRepository extends JpaRepository<Lemma, Integer> {
     List<Lemma> findByLemmaAndSiteOrderByFrequency(@Param("lemma") List<String> lemma,
                                                    @Param("siteId") List<Integer> siteId);
 
-    boolean existsByLemma(String lemma);
-@Transactional
-    @Modifying (clearAutomatically = true, flushAutomatically = true)
-    @Query(value = "UPDATE Lemma l SET l.frequency = l.frequency + 1 WHERE l.site_id = :siteId AND l.lemma = :lemma", nativeQuery = true)
-    void updateLemmaFrequency(@Param("siteId") Integer site_id, @Param("lemma") String lemma);
+
+    boolean existsByLemmaAndSiteByLemma (String lemma, Site site );
+
+    @Transactional
+    @Modifying (flushAutomatically = true, clearAutomatically = true)
+    @Query("UPDATE Lemma l SET l.frequency = l.frequency + 1 WHERE l.siteByLemma = :site AND l.lemma = :lemma")
+    void updateLemmaFrequency(@Param("site") Site site, @Param("lemma") String lemma);
 
 
+    @Query(value = "select * from Lemma l where l.lemma = ?1 and l.site_id = ?2", nativeQuery = true)
+    Lemma idToLemma(String lemma, Integer siteId);
+    @Transactional
+    @Query(value = "select * from Lemma l where l.lemma IN ?1 and l.site_id IN ?2", nativeQuery = true)
+    List<Lemma> idToLemmaList(List <String> lemma, List<Integer> siteId);
 
-    @Query(value = "select * from Lemma l where l.lemma = ?1", nativeQuery = true)
-    Lemma idToLemma(String lemma);
+    @Query(value = "Select l.frequency from Lemma l where l.id = :idLemma")
+    Integer frequencyById (@Param("idLemma") Integer idLemma);
+
+    @Transactional
+    @Modifying (flushAutomatically = true, clearAutomatically = true)
+    @Query("UPDATE Lemma l SET l.frequency = l.frequency - 1 WHERE l.id = :lemmaId")
+    void updateLemmaFrequencyDelete(@Param("lemmaId") Integer lemmaId);
 }

@@ -3,10 +3,15 @@ spring:
     url: jdbc:mysql://localhost:3306/search_engine?useSSL=false&requireSSL=false&allowPublicKeyRetrieval=true
     username: root
     password: Testtest
-    hikari:
-      minIdle: 10
-      idle-timeout: 100000
-      maximumPoolSize: 10
+    prepStmtCacheSize: 250
+    prepStmtCacheSqlLimit: 2048
+    useServerPrepStmts: true
+    useLocalSessionState: true
+    rewriteBatchedStatements: true
+    cacheResultSetMetadata: true
+    cacheServerConfiguration: true
+    elideSetAutoCommits: true
+    maintainTimeStats: false
   jpa:
     hibernate:
       dialect: org.hibernate.dialect.MySQLDialect
@@ -14,18 +19,18 @@ spring:
       ddl-auto: update
 indexing-settings:
   sites:
-    - url: https://ria.ru
-      name: Ria.ru
+    - url: http://музей-ямщика.рф
+      name: Музей Ямщика
     - url: http://www.playback.ru
       name: PlayBack.Ru
-    - url: https://www.interfax.ru
-      name: Interfax.ru
-    - url: https://vz.ru
-      name: Vz.ru
-    - url: https://www.rbc.ru
-      name: Rbc.ru
+#    - url: https://www.interfax.ru
+#      name: Interfax.ru
+#    - url: https://vz.ru
+#      name: Vz.ru
+#    - url: https://www.rbc.ru
+#      name: Rbc.ru
 
 configparser:
   useragent: PitonSearchBot/1.0
   referrer: http://www.google.com
-  timeout: 100000
+  timeout: 10000
