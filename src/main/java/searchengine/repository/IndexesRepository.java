@@ -29,10 +29,6 @@ public interface IndexesRepository  extends JpaRepository<Indexes, Integer> {
     @Query("DELETE FROM Indexes")
     void deleteAll();
 
-    @Transactional
-    @Query(value = "select * from Indexes where Indexes.lemma_id in :lemmaId and Indexes.page_id in :pageId", nativeQuery = true)
-    List<Indexes> findByPageAndLemmas(@Param("lemmaId") List<Integer> lemmaId,
-                                      @Param("pageId") List<Integer> pageId);
 
     @Transactional
     @Query(value = "SELECT i.id, i.page_id, i.lemma_id, i.rank_lemma FROM Indexes i " +
@@ -43,6 +39,4 @@ public interface IndexesRepository  extends JpaRepository<Indexes, Integer> {
     List<Indexes> findIndexByLemma(@Param("lemma") List<String> lemma,
                           @Param("siteId") List<Integer> siteId,
                           @Param("lemma")Pageable pageable);
-
-
 }

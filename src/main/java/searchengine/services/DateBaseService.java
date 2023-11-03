@@ -1,5 +1,6 @@
 package searchengine.services;
 
+import jakarta.persistence.Table;
 import lombok.Data;
 
 
@@ -49,19 +50,6 @@ public class DateBaseService {
         site.setStatusTime(LocalDateTime.now());
         return siteRepository.saveAndFlush(site);
     }
-    @Transactional
-    public void deleteAllPages() {
-        pageRepository.deleteAll();
-    }
-    @Transactional
-    public void deleteAllLemma() {
-        lemmaRepository.deleteAll();
-    }
-
-    @Transactional
-    public void deleteAllIndexes() {
-        indexesRepository.deleteAll();
-    }
 
     @Transactional(readOnly = true)
     public Page addPageToDateBase(String path, int code, String content, Site site, int pageId) {
@@ -77,7 +65,7 @@ public class DateBaseService {
         return page;
     }
 
-    public void addEntitiesToDateBase(Document doc, String url, int code, Site site, int pageId) throws IOException {
+    public void addEntitiesToDateBase(Document doc, String url, int code, Site site, int pageId) throws IOException, InterruptedException {
         String path = url.substring(url.indexOf('/', url.indexOf(".")));
         String content = "Page not found";
         if (!(doc == null)) {
@@ -94,7 +82,7 @@ public class DateBaseService {
         updateSite(site, Status.INDEXING);
     }
 
-    public  void addLemmaToDateBase(String lemmas, int rank, Site site, Page page) {
+    public  void addLemmaToDateBase(String lemmas, int rank, Site site, Page page) throws InterruptedException {
     Lemma lemma = new Lemma();
         if (!lemmaRepository.existsByLemmaAndSiteByLemma(lemmas, site)) {
             lemma.setSiteByLemma(site);
@@ -105,13 +93,12 @@ public class DateBaseService {
             return;
         }
         updateLemma(lemmas, rank, page, site);
-
+        indexAddToDB(lemmas, rank, page, site);
     }
 
-
-    public synchronized void updateLemma (String lemmas, int rank, Page page, Site site){
+    public synchronized void updateLemma (String lemmas, int rank, Page page, Site site) throws InterruptedException {
         lemmaRepository.updateLemmaFrequency(site, lemmas);
-        indexAddToDB(lemmas, rank, page, site);
+
     }
     public void indexAddToDB(String lemmas, int rank, Page page, Site site) {
             Indexes index = new Indexes();

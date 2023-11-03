@@ -91,6 +91,8 @@ public class ParserLinksService extends RecursiveAction {
                     dateBaseService.updateLastError(site, url + " - " + "Страница пустая");
                 } catch (ParserConfigurationException | IOException | SQLException ex) {
                     dateBaseService.updateLastError(site, url + " - " + ex.getMessage());
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
                 }
             }
         }

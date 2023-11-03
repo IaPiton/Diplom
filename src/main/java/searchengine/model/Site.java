@@ -14,6 +14,7 @@ import java.util.Collection;
 @Setter
 @Table(name = "site")
 public class Site {
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
       private int id;

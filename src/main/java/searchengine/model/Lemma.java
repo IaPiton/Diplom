@@ -10,7 +10,7 @@ import java.util.Collection;
 @Entity
 @Setter
 @Getter
-@Table(name = "lemma")
+@Table(name = "lemma", uniqueConstraints = {@UniqueConstraint(columnNames = {"lemma", "site_id"})})
 public class Lemma {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

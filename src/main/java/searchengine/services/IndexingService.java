@@ -58,9 +58,9 @@ public class IndexingService {
             ArrayList<Site> sites = siteConfig.getSites();
             indexingRun.set(true);
             indexingStop.set(false);
-            dateBaseService.deleteAllIndexes();
-            dateBaseService.deleteAllPages();
-            dateBaseService.deleteAllLemma();
+            indexesRepository.deleteAll();
+            pageRepository.deleteAll();
+            lemmaRepository.deleteAll();
             for (Site site : sites) {
                 countSite++;
                 CompletableFuture.runAsync(() -> {

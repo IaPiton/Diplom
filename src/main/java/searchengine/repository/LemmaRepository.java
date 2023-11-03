@@ -17,10 +17,6 @@ import java.util.List;
 public interface LemmaRepository extends JpaRepository<Lemma, Integer> {
 
     long countBySiteByLemma(Site siteByLemma);
-    @Override
-    @Modifying
-    @Query("DELETE FROM Lemma")
-    void deleteAll();
 
     @Transactional
     @Modifying
@@ -31,7 +27,7 @@ public interface LemmaRepository extends JpaRepository<Lemma, Integer> {
     boolean existsByLemmaAndSiteByLemma (String lemma, Site site );
 
     @Transactional
-    @Modifying (flushAutomatically = true, clearAutomatically = true)
+    @Modifying
     @Query("UPDATE Lemma l SET l.frequency = l.frequency + 1 WHERE l.siteByLemma = :site AND l.lemma = :lemma")
     void updateLemmaFrequency(@Param("site") Site site, @Param("lemma") String lemma);
 

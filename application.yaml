@@ -23,10 +23,10 @@ indexing-settings:
       name: Музей Ямщика
     - url: http://www.playback.ru
       name: PlayBack.Ru
-    - url: https://volochek.life
-      name: Volochek.life
-
-
+    - url: https://www.rbc.ru
+      name: Rbc.ru
+    - url: https://ria.ru
+      name: Ria.ru
 configparser:
   useragent: PitonSearchBot/1.0
   referrer: http://www.google.com

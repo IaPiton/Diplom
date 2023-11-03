@@ -18,8 +18,6 @@ import java.util.List;
 public interface PageRepository extends JpaRepository<Page, Long> {
     long countBySiteByPage(Site siteByPage);
     @Override
-    @Modifying
-    @Query("DELETE FROM Page")
     void deleteAll();
 
     @Query(value = "SELECT p.id FROM Page p WHERE p.path LIKE :url%",
@@ -31,8 +29,5 @@ public interface PageRepository extends JpaRepository<Page, Long> {
             nativeQuery = true)
     void deletePathByPage(@Param("idPage") Integer idPage);
 
-    @Transactional
-    @Query(value = "SELECT p.code, p.id, p.site_id, p.content, p.path  FROM Page p JOIN Indexes ON p.id = Indexes.page_id WHERE Indexes.page_id IN ?", nativeQuery = true)
-    List<Page> pageInIndex(List<Integer> lemmaId);
 }
 
