@@ -43,8 +43,7 @@ public class DateBaseService {
     private IndexesRepository indexesRepository;
     @Autowired
     private LemmaRepository lemmaRepository;
-    private  AtomicBoolean indexingRun = new AtomicBoolean();
-    private  AtomicBoolean indexingStop = new AtomicBoolean();
+
 
     @Transactional(readOnly = true)
     public Site findSiteByName(Site site) {

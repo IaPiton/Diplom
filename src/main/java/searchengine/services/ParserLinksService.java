@@ -52,7 +52,7 @@ public class ParserLinksService extends RecursiveAction {
 
     @Override
     protected void compute() {
-        if (!dateBaseService.getIndexingStop().get()) {
+        if (!IndexingService.getIndexingStop().get()) {
             List<ParserLinksService> tasks = new ArrayList<>();
             if (linksSet.add(url)) {
                 try {
