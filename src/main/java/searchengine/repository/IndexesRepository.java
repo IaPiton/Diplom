@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.RequestParam;
 import searchengine.model.Indexes;
 
 
@@ -31,6 +32,7 @@ public interface IndexesRepository  extends JpaRepository<Indexes, Integer> {
 
 
     @Transactional
+
     @Query(value = "SELECT i.id, i.page_id, i.lemma_id, i.rank_lemma FROM Indexes i " +
             "JOIN Lemma l ON i.lemma_id = l.id " +
             "where l.lemma IN ?1 and l.site_id IN ?2"
@@ -39,4 +41,13 @@ public interface IndexesRepository  extends JpaRepository<Indexes, Integer> {
     List<Indexes> findIndexByLemma(@Param("lemma") List<String> lemma,
                           @Param("siteId") List<Integer> siteId,
                           @Param("lemma")Pageable pageable);
+
+    @Transactional
+    @Query(value = "SELECT count(distinct i.page_id) FROM Indexes i " +
+            "JOIN Lemma l ON i.lemma_id = l.id " +
+            "where l.lemma IN ?1 and l.site_id IN ?2"
+            ,nativeQuery = true
+    )
+    Integer countIndex(@Param("lemma") List<String> lemma,
+                                   @Param("siteId") List<Integer> siteId);
 }

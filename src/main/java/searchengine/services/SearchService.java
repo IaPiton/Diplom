@@ -1,5 +1,6 @@
 package searchengine.services;
 
+import lombok.Getter;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -9,7 +10,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import searchengine.config.SiteConfig;
 import searchengine.dto.SearchDto;
 import searchengine.model.Indexes;
 import searchengine.model.Page;
@@ -32,7 +32,9 @@ public class SearchService {
     private DateBaseService dateBaseService;
     @Autowired
     private IndexesRepository indexesRepository;
-
+    @Getter
+    public static int count;
+    private int pageNumber;
     public SearchService() throws IOException {
     }
 
@@ -50,20 +52,27 @@ public class SearchService {
 
     public List<SearchDto> createSearchPage(List<Integer> siteId, String query, int offset, int limit) {
         List<String> textLemmaList = textLemma(query);
-        Pageable firstPageWithLimitElements = PageRequest.of(offset, limit, Sort.by("rank_lemma" ).descending());
-        List<Indexes> indexesListTest = indexesRepository.findIndexByLemma(textLemmaList, siteId, firstPageWithLimitElements);
+        count = indexesRepository.countIndex(textLemmaList,siteId);
+        if(offset == 0){
+            pageNumber = 0;
+        }else{
+        pageNumber++;}
+        Pageable firstPageWithLimitElements = PageRequest.of(pageNumber, limit, Sort.by("rank_lemma" ).descending());
+        List<Indexes> indexesList = indexesRepository.findIndexByLemma(textLemmaList, siteId, firstPageWithLimitElements);
         List<Page> pageList = new ArrayList<>();
-        for (Indexes indexes : indexesListTest){
+
+        for (Indexes indexes : indexesList){
             pageList.add(indexes.getPageByIndex());
         }
-       HashMap<Page, Float> relevanceMap = relevanceMap(pageList, indexesListTest);
+
+       HashMap<Page, Float> relevanceMap = relevanceMap(pageList, indexesList);
         LinkedHashMap<Page, Float> relativeRelevanceMap = relativeRelevanceMap(relevanceMap);
-       List<SearchDto> searchDtoList = createSearchDtoList(relativeRelevanceMap, textLemmaList);
+       List<SearchDto> searchDtoList = createSearchDtoList(count, relativeRelevanceMap, textLemmaList);
 
         return searchDtoList;
     }
 
-    public List<SearchDto> createSearchDtoList (LinkedHashMap<Page, Float> relativeRelevanceMap, List<String> textLemmaList){
+    public List<SearchDto> createSearchDtoList (int count, LinkedHashMap<Page, Float> relativeRelevanceMap, List<String> textLemmaList){
         List<SearchDto> searchDtoList = new ArrayList<>();
         StringBuilder bodyStringBuilder = new StringBuilder();
         for (Page page : relativeRelevanceMap.keySet()) {

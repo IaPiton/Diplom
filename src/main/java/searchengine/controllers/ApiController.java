@@ -82,7 +82,7 @@ public class ApiController {
         } else {
             searchData = searchService.fullSearch(query, offset, 30);
         }
-        return new ResultDto(true, searchData.size(), searchData, HttpStatus.OK);
+        return new ResultDto(true, SearchService.getCount(),  searchData, HttpStatus.OK);
     }
 }
 
