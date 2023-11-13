@@ -134,7 +134,6 @@ https://github.com/IaPiton/Diplom
 оно должно быть скомпилировано в панели <i>Maven</i> среды разработки  
 командой <i>package</i>:
 
-<img src="./readme_assets/run_package.png" width="40%"/><p>
 Результат компиляции, <i>SearchEngine-1.0-SNAPSHOT.jar</i>, 
 будет располагаться в папке <i>target</i>. Этот файл можно перенести
 в любую доступную папку на компьютере, при этом в той же папке 
