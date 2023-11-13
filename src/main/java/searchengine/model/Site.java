@@ -2,22 +2,20 @@ package searchengine.model;
 
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
 
 
 @Entity
-@Getter
-@Setter
+@Data
 @Table(name = "site")
 public class Site {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-      private int id;
+    private int id;
 
     @Enumerated(EnumType.STRING)
     private Status status;

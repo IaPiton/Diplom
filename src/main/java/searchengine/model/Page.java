@@ -1,17 +1,14 @@
 package searchengine.model;
 
 import jakarta.persistence.*;
+import lombok.Data;
 
-
-import lombok.Getter;
-import lombok.Setter;
 
 import java.util.Collection;
 
-@Setter
-@Getter
+@Data
 @Entity
-@Table(name = "page",   uniqueConstraints = {@UniqueConstraint(columnNames = {"site_id","path"})})
+@Table(name = "page", uniqueConstraints = {@UniqueConstraint(columnNames = {"site_id", "path"})})
 public class Page {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -21,7 +18,7 @@ public class Page {
     @JoinColumn(name = "site_id", referencedColumnName = "id", nullable = false)
     private Site siteByPage;
 
-    @Column(name = "path",  nullable = false)
+    @Column(name = "path", nullable = false)
     private String path;
 
     @Column(nullable = false)

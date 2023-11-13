@@ -1,15 +1,13 @@
 package searchengine.model;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
 import java.util.Collection;
 
 
 @Entity
-@Setter
-@Getter
+@Data
 @Table(name = "lemma", uniqueConstraints = {@UniqueConstraint(columnNames = {"lemma", "site_id"})})
 public class Lemma {
     @Id

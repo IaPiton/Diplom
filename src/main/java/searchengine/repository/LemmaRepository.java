@@ -10,8 +10,6 @@ import org.springframework.transaction.annotation.Transactional;
 import searchengine.model.Lemma;
 import searchengine.model.Site;
 
-import java.util.List;
-
 
 @Repository
 public interface LemmaRepository extends JpaRepository<Lemma, Integer> {
@@ -24,7 +22,7 @@ public interface LemmaRepository extends JpaRepository<Lemma, Integer> {
             nativeQuery = true)
     void deleteLemmaPathByPage(@Param("id") Integer id);
 
-    boolean existsByLemmaAndSiteByLemma (String lemma, Site site );
+    boolean existsByLemmaAndSiteByLemma(String lemma, Site site);
 
     @Transactional
     @Modifying
@@ -36,10 +34,10 @@ public interface LemmaRepository extends JpaRepository<Lemma, Integer> {
     Lemma idToLemma(String lemma, Integer siteId);
 
     @Query(value = "Select l.frequency from Lemma l where l.id = :idLemma")
-    Integer frequencyById (@Param("idLemma") Integer idLemma);
+    Integer frequencyById(@Param("idLemma") Integer idLemma);
 
     @Transactional
-    @Modifying (flushAutomatically = true, clearAutomatically = true)
+    @Modifying(flushAutomatically = true, clearAutomatically = true)
     @Query("UPDATE Lemma l SET l.frequency = l.frequency - 1 WHERE l.id = :lemmaId")
     void updateLemmaFrequencyDelete(@Param("lemmaId") Integer lemmaId);
 }

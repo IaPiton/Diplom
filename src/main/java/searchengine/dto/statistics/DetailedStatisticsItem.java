@@ -18,5 +18,4 @@ public class DetailedStatisticsItem {
     private long lemmas;
 
 
-
 }

@@ -15,10 +15,9 @@ import searchengine.model.Indexes;
 import searchengine.model.Page;
 import searchengine.model.Site;
 import searchengine.repository.IndexesRepository;
-import searchengine.repository.LemmaRepository;
-import searchengine.repository.PageRepository;
 import searchengine.repository.SiteRepository;
 import utils.Lemmanisator;
+
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -35,6 +34,7 @@ public class SearchService {
     @Getter
     public static int count;
     private int pageNumber;
+
     public SearchService() throws IOException {
     }
 
@@ -52,27 +52,28 @@ public class SearchService {
 
     public List<SearchDto> createSearchPage(List<Integer> siteId, String query, int offset, int limit) {
         List<String> textLemmaList = textLemma(query);
-        count = indexesRepository.countIndex(textLemmaList,siteId);
-        if(offset == 0){
+        count = indexesRepository.countIndex(textLemmaList, siteId);
+        if (offset == 0) {
             pageNumber = 0;
-        }else{
-        pageNumber++;}
-        Pageable firstPageWithLimitElements = PageRequest.of(pageNumber, limit, Sort.by("rank_lemma" ).descending());
+        } else {
+            pageNumber++;
+        }
+        Pageable firstPageWithLimitElements = PageRequest.of(pageNumber, limit, Sort.by("rank_lemma").descending());
         List<Indexes> indexesList = indexesRepository.findIndexByLemma(textLemmaList, siteId, firstPageWithLimitElements);
         List<Page> pageList = new ArrayList<>();
 
-        for (Indexes indexes : indexesList){
+        for (Indexes indexes : indexesList) {
             pageList.add(indexes.getPageByIndex());
         }
 
-       HashMap<Page, Float> relevanceMap = relevanceMap(pageList, indexesList);
+        HashMap<Page, Float> relevanceMap = relevanceMap(pageList, indexesList);
         LinkedHashMap<Page, Float> relativeRelevanceMap = relativeRelevanceMap(relevanceMap);
-       List<SearchDto> searchDtoList = createSearchDtoList(count, relativeRelevanceMap, textLemmaList);
+        List<SearchDto> searchDtoList = createSearchDtoList(relativeRelevanceMap, textLemmaList);
 
         return searchDtoList;
     }
 
-    public List<SearchDto> createSearchDtoList (int count, LinkedHashMap<Page, Float> relativeRelevanceMap, List<String> textLemmaList){
+    public List<SearchDto> createSearchDtoList(LinkedHashMap<Page, Float> relativeRelevanceMap, List<String> textLemmaList) {
         List<SearchDto> searchDtoList = new ArrayList<>();
         StringBuilder bodyStringBuilder = new StringBuilder();
         for (Page page : relativeRelevanceMap.keySet()) {
@@ -86,7 +87,7 @@ public class SearchService {
             bodyStringBuilder.append(body);
             Float pageValue = relativeRelevanceMap.get(page);
             StringBuilder snippetBuilder = new StringBuilder();
-            List<Integer> lemmaIndex = findLemmaIndex(body,textLemmaList);
+            List<Integer> lemmaIndex = findLemmaIndex(body, textLemmaList);
             List<String> wordList = getWordsFromContent(body, lemmaIndex);
             int y = 0;
             while (y < wordList.size()) {
@@ -110,7 +111,7 @@ public class SearchService {
     }
 
     public List<String> textLemma(String query) {
-        HashMap<String, Integer>searchLemmaMap = lemmanisator.textToLemma(query);
+        HashMap<String, Integer> searchLemmaMap = lemmanisator.textToLemma(query);
         List<String> textLemmaList = new ArrayList<>(searchLemmaMap.keySet());
         return textLemmaList;
     }
@@ -146,20 +147,21 @@ public class SearchService {
         LinkedHashMap<Page, Float> relativeRelevanceMap = new LinkedHashMap<>();
         Map.Entry<Page, Float> pageFloatEntry;
         int y = 0;
-        while (y <sortList.size()) {
+        while (y < sortList.size()) {
             pageFloatEntry = sortList.get(y);
             relativeRelevanceMap.putIfAbsent(pageFloatEntry.getKey(), pageFloatEntry.getValue());
             y++;
         }
         return relativeRelevanceMap;
     }
-    public List<Integer> findLemmaIndex (String body,  List<String> textLemmaList){
+
+    public List<Integer> findLemmaIndex(String body, List<String> textLemmaList) {
         List<Integer> lemmaIndex = new ArrayList<>();
         int i = 0;
         while (i < textLemmaList.size()) {
             String lemma = textLemmaList.get(i);
             lemmaIndex.addAll(lemmanisator.findLemmaIndexInWord(body, lemma));
-             i++;
+            i++;
         }
         Collections.sort(lemmaIndex);
         return lemmaIndex;
@@ -191,7 +193,6 @@ public class SearchService {
             } else if (sizeSniper == 1) {
                 sizeTextSniper = 300;
             }
-            int x = content.length();
             if ((end + sizeTextSniper) > content.length()) {
                 sizeTextSniper = content.length() - end;
             }

@@ -46,8 +46,8 @@ public class IndexingService {
     private static AtomicBoolean indexingRun = new AtomicBoolean(false);
     @Getter
     private static AtomicBoolean indexingStop = new AtomicBoolean(false);
-    int countSite = 0;
-    int finishedSite = 0;
+    private int countSite = 0;
+    private int finishedSite = 0;
 
     public ResultDto startIndexing() {
         if (indexingRun.get()) {
@@ -123,7 +123,6 @@ public class IndexingService {
                     }
 
                 }
-
                 pageRepository.deletePathByPage(idPage);
             }
         }

@@ -7,7 +7,6 @@ import org.springframework.stereotype.Component;
 import searchengine.model.Site;
 
 import java.util.ArrayList;
-import java.util.List;
 
 @Getter
 @Setter
@@ -15,5 +14,4 @@ import java.util.List;
 @ConfigurationProperties(prefix = "indexing-settings")
 public class SiteConfig {
     private ArrayList<Site> sites;
-
 }

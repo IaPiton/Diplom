@@ -39,7 +39,7 @@ public class DateBaseService {
     @Autowired
     private LemmaRepository lemmaRepository;
 
-    @Transactional(readOnly = true)
+    @Transactional
     public Site findSiteByName(Site site) {
         return siteRepository.findByName(site.getName());
     }
@@ -51,7 +51,7 @@ public class DateBaseService {
         return siteRepository.saveAndFlush(site);
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public Page addPageToDateBase(String path, int code, String content, Site site, int pageId) {
         Page page = new Page();
         if (!(pageId == 0)) {
@@ -76,14 +76,14 @@ public class DateBaseService {
             Lemmanisator lemmanisator = new Lemmanisator();
             HashMap<String, Integer> lemma = lemmanisator.textToLemma(content);
             for (String lemmas : lemma.keySet()) {
-                addLemmaToDateBase(lemmas, lemma.get(lemmas),  site, page);
+                addLemmaToDateBase(lemmas, lemma.get(lemmas), site, page);
             }
         }
         updateSite(site, Status.INDEXING);
     }
 
-    public  void addLemmaToDateBase(String lemmas, int rank, Site site, Page page) throws InterruptedException {
-    Lemma lemma = new Lemma();
+    public void addLemmaToDateBase(String lemmas, int rank, Site site, Page page) throws InterruptedException {
+        Lemma lemma = new Lemma();
         if (!lemmaRepository.existsByLemmaAndSiteByLemma(lemmas, site)) {
             lemma.setSiteByLemma(site);
             lemma.setLemma(lemmas);
@@ -96,25 +96,27 @@ public class DateBaseService {
         indexAddToDB(lemmas, rank, page, site);
     }
 
-    public synchronized void updateLemma (String lemmas, int rank, Page page, Site site) throws InterruptedException {
+    public synchronized void updateLemma(String lemmas, int rank, Page page, Site site) throws InterruptedException {
         lemmaRepository.updateLemmaFrequency(site, lemmas);
 
     }
+
     public void indexAddToDB(String lemmas, int rank, Page page, Site site) {
-            Indexes index = new Indexes();
-            index.setPageByIndex(page);
-            index.setLemmaByIndex(lemmaRepository.idToLemma(lemmas, site.getId()));
-            index.setRankLemma(rank);
-            indexesRepository.saveAndFlush(index);
+        Indexes index = new Indexes();
+        index.setPageByIndex(page);
+        index.setLemmaByIndex(lemmaRepository.idToLemma(lemmas, site.getId()));
+        index.setRankLemma(rank);
+        indexesRepository.saveAndFlush(index);
     }
 
 
-    @Transactional()
+    @Transactional
     public Site updateLastError(Site site, String errorMessage) {
         site.setLastError(errorMessage);
         site.setStatusTime(LocalDateTime.now());
         return siteRepository.save(site);
     }
+
     @Transactional
     public List<Integer> findPathByPage(String path) {
         List<Integer> result = pageRepository.findPathByPage(path);
@@ -126,17 +128,18 @@ public class DateBaseService {
         List<Integer> lemmaIdByPath = indexesRepository.findLemmaByPath(idPath);
         return lemmaIdByPath;
     }
-    public List<Integer> siteId (List<Site> site){
+
+    public List<Integer> siteId(List<Site> site) {
         List<Integer> siteId = new ArrayList<>();
-        for (Site sites : site){
+        for (Site sites : site) {
             siteId.add(sites.getId());
         }
         return siteId;
     }
 
-    public List<Integer> lemmaId (List<Lemma> lemmaList){
+    public List<Integer> lemmaId(List<Lemma> lemmaList) {
         List<Integer> lemmaId = new ArrayList<>();
-        for (Lemma lemma : lemmaList){
+        for (Lemma lemma : lemmaList) {
             lemmaId.add(lemma.getId());
         }
         return lemmaId;

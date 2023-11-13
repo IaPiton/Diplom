@@ -1,11 +1,9 @@
 package searchengine.controllers;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import searchengine.config.SiteConfig;
 
 
 import searchengine.dto.ResultDto;
@@ -13,7 +11,6 @@ import searchengine.dto.SearchDto;
 import searchengine.dto.statistics.StatisticsResponse;
 
 import searchengine.repository.SiteRepository;
-import searchengine.services.DateBaseService;
 import searchengine.services.IndexingService;
 import searchengine.services.SearchService;
 import searchengine.services.StatisticsService;
@@ -69,7 +66,7 @@ public class ApiController {
             @RequestParam(value = "offset", defaultValue = "0", required = false) int offset,
             @RequestParam(value = "limit", defaultValue = "20", required = false) int limit) {
         List<SearchDto> searchData;
-        if (query.isEmpty()){
+        if (query.isEmpty()) {
             return new ResultDto(false, "Задан пустой поисковый запрос");
         }
         if (!(site == null)) {
@@ -82,7 +79,7 @@ public class ApiController {
         } else {
             searchData = searchService.fullSearch(query, offset, 30);
         }
-        return new ResultDto(true, SearchService.getCount(),  searchData, HttpStatus.OK);
+        return new ResultDto(true, SearchService.getCount(), searchData, HttpStatus.OK);
     }
 }
 

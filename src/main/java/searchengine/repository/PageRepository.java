@@ -17,12 +17,14 @@ import java.util.List;
 @Repository
 public interface PageRepository extends JpaRepository<Page, Long> {
     long countBySiteByPage(Site siteByPage);
+
     @Override
     void deleteAll();
 
     @Query(value = "SELECT p.id FROM Page p WHERE p.path LIKE :url%",
             nativeQuery = true)
     List<Integer> findPathByPage(@Param("url") String path);
+
     @Transactional
     @Modifying
     @Query(value = "delete from Page p where p.id=:idPage",
