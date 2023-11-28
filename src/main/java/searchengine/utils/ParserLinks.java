@@ -1,4 +1,4 @@
-package searchengine.services;
+package searchengine.utils;
 
 import lombok.Data;
 
@@ -16,6 +16,7 @@ import org.springframework.stereotype.Component;
 import searchengine.config.ParserConfig;
 
 import searchengine.model.Site;
+import searchengine.services.IndexingService;
 
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
@@ -30,7 +31,7 @@ import java.util.concurrent.RecursiveAction;
 @Data
 @Component
 @Slf4j
-public class ParserLinksService extends RecursiveAction {
+public class ParserLinks extends RecursiveAction {
     private String url;
     private CopyOnWriteArraySet<String> linksSet;
     private Site site;
@@ -39,11 +40,10 @@ public class ParserLinksService extends RecursiveAction {
     @Autowired
     private DateBaseService dateBaseService;
 
-
-    public ParserLinksService() {
+    public ParserLinks() {
     }
 
-    public ParserLinksService(String url, CopyOnWriteArraySet<String> linksSet, Site site) {
+    public ParserLinks(String url, CopyOnWriteArraySet<String> linksSet, Site site) {
         this.url = url;
         this.linksSet = linksSet;
         this.site = site;
@@ -51,8 +51,8 @@ public class ParserLinksService extends RecursiveAction {
 
     @Override
     protected void compute() {
-        if (!IndexingService.getIndexingStop().get()) {
-            List<ParserLinksService> tasks = new ArrayList<>();
+        if (!DateBaseService.getIndexingStop().get()) {
+            List<ParserLinks> tasks = new ArrayList<>();
             if (linksSet.add(url)) {
                 try {
                     Document document = getDocument(url);
@@ -64,17 +64,17 @@ public class ParserLinksService extends RecursiveAction {
                         for (Element resultLink : resultLinks) {
                             String absLink = resultLink.attr("abs:href");
                             if ((!linksChildren.contains(absLink)) && absLink.startsWith(url)
-                                    && !(absLink.contains("#")) && absLink.length() > url.length()) {
+                                    && !(absLink.contains("#")) && absLink.length() > url.length() && !isFile(url)) {
                                 linksChildren.add(absLink);
                             }
                         }
                         for (String childLink : linksChildren) {
                             try {
-                                Thread.sleep(350);
+                                Thread.sleep(2000);
                             } catch (InterruptedException e) {
                                 log.info("Произошло прерывание потока");
                             }
-                            ParserLinksService task = new ParserLinksService(childLink, linksSet, site);
+                            ParserLinks task = new ParserLinks(childLink, linksSet, site);
                             task.setParserConfig(parserConfig);
                             task.setDateBaseService(dateBaseService);
                             task.fork();
@@ -82,7 +82,7 @@ public class ParserLinksService extends RecursiveAction {
                             tasks.add(task);
                         }
                     }
-                    for (ParserLinksService task : tasks) {
+                    for (ParserLinks task : tasks) {
                         task.join();
                     }
                 } catch (NullPointerException ex) {
@@ -103,14 +103,14 @@ public class ParserLinksService extends RecursiveAction {
                     .connect(url)
                     .userAgent(parserConfig.getUseragent())
                     .referrer(parserConfig.getReferrer())
-                    .timeout(parserConfig.getTimeout());
+                    .timeout(parserConfig.getTimeout())
+                    .ignoreContentType(true);
             doc = connection.get();
             codeResponse = connection.response().statusCode();
         } catch (HttpStatusException | SocketTimeoutException e) {
             codeResponse = 503;
             System.out.println(e.getLocalizedMessage());
         } catch (UnsupportedMimeTypeException e) {
-
             codeResponse = 404;
             System.out.println(e.getMessage());
         } catch (IOException e) {
@@ -118,5 +118,22 @@ public class ParserLinksService extends RecursiveAction {
             codeResponse = 404;
         }
         return doc;
+    }
+
+    private static boolean isFile(String link) {
+        link.toLowerCase();
+        return link.contains(".jpg")
+                || link.contains(".jpeg")
+                || link.contains(".png")
+                || link.contains(".gif")
+                || link.contains(".webp")
+                || link.contains(".pdf")
+                || link.contains(".eps")
+                || link.contains(".xlsx")
+                || link.contains(".doc")
+                || link.contains(".pptx")
+                || link.contains(".docx")
+                || link.contains(".zip")
+                || link.contains("?_ga");
     }
 }

@@ -7,18 +7,18 @@ spring:
     hibernate:
       dialect: org.hibernate.dialect.MySQLDialect
       show-sql: true
-      ddl-auto: update
+      ddl-auto: create
 indexing-settings:
   sites:
     - url: http://музей-ямщика.рф
       name: Музей Ямщика
-    - url: http://www.playback.ru
+    - url: http://playback.ru
       name: PlayBack.Ru
-    - url: https://www.rbc.ru
-      name: Rbc.ru
-    - url: https://ria.ru
-      name: Ria.ru
+#    - url: https://life.ru
+#      name: Life.ru
+#    - url: https://ria.ru
+#      name: Ria.ru
 configparser:
   useragent: PitonSearchBot/1.0
   referrer: http://www.google.com
-  timeout: 10000
+  timeout: 100000

@@ -16,10 +16,12 @@ import searchengine.model.Page;
 import searchengine.model.Site;
 import searchengine.repository.IndexesRepository;
 import searchengine.repository.SiteRepository;
-import utils.Lemmanisator;
+import searchengine.utils.DateBaseService;
+import searchengine.utils.Lemmanisator;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 @Service
@@ -31,9 +33,8 @@ public class SearchService {
     private DateBaseService dateBaseService;
     @Autowired
     private IndexesRepository indexesRepository;
-    @Getter
-    public static int count;
-    private int pageNumber;
+
+    private int pageNumber = -1;
 
     public SearchService() throws IOException {
     }
@@ -52,24 +53,19 @@ public class SearchService {
 
     public List<SearchDto> createSearchPage(List<Integer> siteId, String query, int offset, int limit) {
         List<String> textLemmaList = textLemma(query);
-        count = indexesRepository.countIndex(textLemmaList, siteId);
-        if (offset == 0) {
-            pageNumber = 0;
-        } else {
-            pageNumber++;
-        }
+        DateBaseService.setCountPage(new AtomicInteger(indexesRepository.countIndex(textLemmaList, siteId)));
+        pageNumber = offset == 0 ? pageNumber = 0 : pageNumber++;
+
+
         Pageable firstPageWithLimitElements = PageRequest.of(pageNumber, limit, Sort.by("rank_lemma").descending());
         List<Indexes> indexesList = indexesRepository.findIndexByLemma(textLemmaList, siteId, firstPageWithLimitElements);
         List<Page> pageList = new ArrayList<>();
-
         for (Indexes indexes : indexesList) {
             pageList.add(indexes.getPageByIndex());
         }
-
         HashMap<Page, Float> relevanceMap = relevanceMap(pageList, indexesList);
         LinkedHashMap<Page, Float> relativeRelevanceMap = relativeRelevanceMap(relevanceMap);
         List<SearchDto> searchDtoList = createSearchDtoList(relativeRelevanceMap, textLemmaList);
-
         return searchDtoList;
     }
 

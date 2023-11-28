@@ -3,15 +3,16 @@ package searchengine.model;
 import jakarta.persistence.*;
 import lombok.Data;
 
+
 import java.util.Collection;
 
 
 @Entity
 @Data
-@Table(name = "lemma", uniqueConstraints = {@UniqueConstraint(columnNames = {"lemma", "site_id"})})
+@Table(name = "lemma", indexes = @Index(columnList = "lemma"))
 public class Lemma {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private int id;
 
     @ManyToOne()

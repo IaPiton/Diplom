@@ -36,7 +36,6 @@ public class StatisticsServiceImpl implements StatisticsService {
     public StatisticsResponse getStatistics() {
         TotalStatistics total = new TotalStatistics(siteRepository.count(), pageRepository.count(),
                 lemmaRepository.count(), true);
-
         List<DetailedStatisticsItem> detailedList = new ArrayList<>();
         siteRepository.findAll().forEach(site -> {
             DetailedStatisticsItem detailed = new DetailedStatisticsItem(site.getUrl(), site.getName(), site.getStatus(),
@@ -44,9 +43,7 @@ public class StatisticsServiceImpl implements StatisticsService {
             detailedList.add(detailed);
         });
         StatisticsData statisticsDate = new StatisticsData(total, detailedList) {
-
         };
-
         return new StatisticsResponse(true, statisticsDate);
     }
 }

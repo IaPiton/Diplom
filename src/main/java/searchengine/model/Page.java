@@ -8,7 +8,7 @@ import java.util.Collection;
 
 @Data
 @Entity
-@Table(name = "page", uniqueConstraints = {@UniqueConstraint(columnNames = {"site_id", "path"})})
+@Table(name = "page", indexes = @Index(columnList = "path"))
 public class Page {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

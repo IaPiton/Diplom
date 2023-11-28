@@ -14,6 +14,7 @@ import searchengine.repository.SiteRepository;
 import searchengine.services.IndexingService;
 import searchengine.services.SearchService;
 import searchengine.services.StatisticsService;
+import searchengine.utils.DateBaseService;
 
 import java.util.List;
 
@@ -79,7 +80,7 @@ public class ApiController {
         } else {
             searchData = searchService.fullSearch(query, offset, 30);
         }
-        return new ResultDto(true, SearchService.getCount(), searchData, HttpStatus.OK);
+        return new ResultDto(true, DateBaseService.getCountPage().get(), searchData, HttpStatus.OK);
     }
 }
 
