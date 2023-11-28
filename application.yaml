@@ -14,10 +14,10 @@ indexing-settings:
       name: Музей Ямщика
     - url: http://playback.ru
       name: PlayBack.Ru
-#    - url: https://life.ru
-#      name: Life.ru
-#    - url: https://ria.ru
-#      name: Ria.ru
+    - url: https://life.ru
+      name: Life.ru
+    - url: https://ria.ru
+      name: Ria.ru
 configparser:
   useragent: PitonSearchBot/1.0
   referrer: http://www.google.com
