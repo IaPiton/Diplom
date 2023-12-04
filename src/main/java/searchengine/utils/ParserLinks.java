@@ -16,7 +16,6 @@ import org.springframework.stereotype.Component;
 import searchengine.config.ParserConfig;
 
 import searchengine.model.Site;
-import searchengine.services.IndexingService;
 
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;

@@ -11,6 +11,7 @@ import searchengine.model.Indexes;
 
 
 import java.util.List;
+
 @Repository
 public interface IndexesRepository extends JpaRepository<Indexes, Integer> {
     @Transactional
@@ -25,22 +26,27 @@ public interface IndexesRepository extends JpaRepository<Indexes, Integer> {
             nativeQuery = true)
     void deleteIndexPathByPage(@Param("id") Integer id);
 
+
     @Transactional
     @Query(value = "SELECT i.id, i.page_id, i.lemma_id, i.rank_lemma FROM Indexes i " +
             "JOIN Lemma l ON i.lemma_id = l.id " +
-            "where l.lemma IN ?1 and l.site_id IN ?2"
+            "where l.lemma = ?1 and l.site_id IN ?2 "
             , nativeQuery = true
     )
-    List<Indexes> findIndexByLemma(@Param("lemma") List<String> lemma,
-                                   @Param("siteId") List<Integer> siteId,
-                                   @Param("lemma") Pageable pageable);
+    List<Indexes> findIndexByLemmas(@Param("lemma") String lemma,
+                                    @Param("siteId") List<Integer> siteId);
 
     @Transactional
-    @Query(value = "SELECT count(distinct i.page_id) FROM Indexes i " +
+    @Query(value = "SELECT i.id, i.page_id, i.lemma_id, i.rank_lemma FROM Indexes i " +
             "JOIN Lemma l ON i.lemma_id = l.id " +
-            "where l.lemma IN ?1 and l.site_id IN ?2"
+            "where l.lemma = ?2 AND i.page_id IN ?1"
             , nativeQuery = true
     )
-    Integer countIndex(@Param("lemma") List<String> lemma,
-                       @Param("siteId") List<Integer> siteId);
+    List<Indexes> findIndexByLemmaAndPage(@Param("pageId") List<Integer> pageId,
+                                          @Param("lemma") String lemma,
+                                          @Param("rank_lemma") Pageable pageable);
+
 }
+
+
+

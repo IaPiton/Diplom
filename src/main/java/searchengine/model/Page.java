@@ -12,7 +12,7 @@ import java.util.Collection;
 public class Page {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private int id;
+    private Integer id;
 
     @ManyToOne()
     @JoinColumn(name = "site_id", referencedColumnName = "id", nullable = false)

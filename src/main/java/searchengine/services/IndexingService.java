@@ -102,6 +102,10 @@ public class IndexingService {
     public ResultDto indexingPage(String url, Site siteForIndex) {
         DateBaseService.setIndexingRun(new AtomicBoolean(true));
         DateBaseService.setIndexingStop(new AtomicBoolean(false));
+        return deletePage(url, siteForIndex);
+    }
+
+    public ResultDto deletePage(String url, Site siteForIndex) {
         String path = url.substring(url.indexOf('/', url.indexOf(".")));
         if (!(dateBaseService.findPathByPage(path) == null)) {
             List<Integer> idPath = dateBaseService.findPathByPage(path);
@@ -118,6 +122,10 @@ public class IndexingService {
                 pageRepository.deletePathByPage(idPage);
             }
         }
+        return indexesPage(url, siteForIndex);
+    }
+
+    public ResultDto indexesPage(String url, Site siteForIndex) {
         Site siteInDateBase = updatingSite(siteForIndex);
         CopyOnWriteArraySet<String> linksSet = new CopyOnWriteArraySet<>();
         ParserLinks parserLinks = new ParserLinks(url, linksSet, siteInDateBase);

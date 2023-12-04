@@ -9,5 +9,6 @@ import java.util.List;
 @Repository
 public interface SiteRepository extends JpaRepository<Site, Long> {
     Site findByName(String siteName);
+
     List<Site> findByUrl(String siteUrl);
 }

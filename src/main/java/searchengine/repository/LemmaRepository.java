@@ -12,6 +12,8 @@ import org.springframework.transaction.annotation.Transactional;
 import searchengine.model.Lemma;
 import searchengine.model.Site;
 
+import java.util.List;
+
 
 @Repository
 public interface LemmaRepository extends JpaRepository<Lemma, Integer> {
@@ -35,4 +37,11 @@ public interface LemmaRepository extends JpaRepository<Lemma, Integer> {
     @Modifying(flushAutomatically = true, clearAutomatically = true)
     @Query("UPDATE Lemma l SET l.frequency = l.frequency - 1 WHERE l.id = :lemmaId")
     void updateLemmaFrequencyDelete(@Param("lemmaId") Integer lemmaId);
+
+    @Transactional
+    @Query(value = "SELECT sum(l.frequency) FROM Lemma l " +
+            "where l.lemma = ?1 and site_id IN ?2"
+            , nativeQuery = true)
+    Integer frequencyLemma(@Param("lemma") String lemma,
+                           @Param("siteId") List<Integer> siteId);
 }

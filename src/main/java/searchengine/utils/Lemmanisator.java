@@ -1,22 +1,22 @@
 package searchengine.utils;
 
 import lombok.Data;
-import org.apache.lucene.morphology.LuceneMorphology;
-import org.apache.lucene.morphology.russian.RussianLuceneMorphology;
 import org.jsoup.Jsoup;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.stream.Stream;
 
 @Component
 @Data
 public class Lemmanisator {
-    private HashMap<String, Integer> wordsMap;
-    private static final String REGEXP_WORD = "[а-яА-ЯёЁ]+";
+
+
+    RussianMorphology russianMorphology = new RussianMorphology();
+    EnglishMorphology englishMorphology = new EnglishMorphology();
+    private static final String REGEXP_RUSSIAN_WORD = "[а-яА-ЯёЁ]+";
+    private static final String REGEXP_ENGLISH_WORD = "[a-zA-Z]+";
     private static final String REGEXP_TEXT = "\\s*(\\s|\\?|\\||»|«|\\*|,|!|\\.)\\s*";
-    LuceneMorphology luceneMorph = new RussianLuceneMorphology();
 
     public Lemmanisator() throws IOException {
     }
@@ -26,30 +26,44 @@ public class Lemmanisator {
         return clearingText;
     }
 
-    public boolean wordCheck(String word) {
-        if (word.matches(REGEXP_WORD)) {
-            List<String> wordBaseForms =
-                    luceneMorph.getMorphInfo(word);
-            return Stream.of("ПРЕДЛ", "СОЮЗ", "ЧАСТ", "МЕЖД").noneMatch(s -> wordBaseForms.get(0).endsWith(s));
+    public Boolean wordsRussian(String word) {
+        if (word.matches(REGEXP_RUSSIAN_WORD)) {
+            return true;
+        }
+        return false;
+    }
+
+    public Boolean wordsEnglish(String word) {
+        if (word.matches(REGEXP_ENGLISH_WORD)) {
+            return true;
         }
         return false;
     }
 
     public HashMap<String, Integer> textToLemma(String content) {
-        wordsMap = new HashMap<>();
+        HashMap<String, Integer> lemmaMap = new HashMap<>();
+        List<String> lemma = new ArrayList<>();
         String text = htmlClearing(content);
         text = content.trim();
         String[] words = text.toLowerCase().split(REGEXP_TEXT);
         for (String word : words) {
-            if (wordCheck(word)) {
-                List<String> wordBaseForms = luceneMorph.getNormalForms(word);
-
-                wordBaseForms.forEach((String w) -> {
-                    wordsMap.put(w, wordsMap.getOrDefault(w, 0) + 1);
-                });
+            if (wordsRussian(word)) {
+                lemma = russianMorphology.russianLemma(word);
+                lemmaMap = lemmaMap(lemma, lemmaMap);
+            }
+            if (wordsEnglish(word)) {
+                lemma = englishMorphology.englishLemma(word);
+                lemmaMap = lemmaMap(lemma, lemmaMap);
             }
         }
-        return wordsMap;
+        return lemmaMap;
+    }
+
+    public HashMap<String, Integer> lemmaMap(List<String> lemmaList, HashMap<String, Integer> lemmaMap) {
+        lemmaList.forEach((String w) -> {
+            lemmaMap.put(w, lemmaMap.getOrDefault(w, 0) + 1);
+        });
+        return lemmaMap;
     }
 
     public Collection<Integer> findLemmaIndexInWord(String content, String lemma) {
@@ -72,8 +86,11 @@ public class Lemmanisator {
 
     public List<String> getLemma(String word) {
         List<String> lemmaList = new ArrayList<>();
-        if (wordCheck(word)) {
-            lemmaList = luceneMorph.getNormalForms(word);
+        if (wordsRussian(word)) {
+            lemmaList = russianMorphology.luceneMorph.getNormalForms(word);
+        }
+        if (wordsEnglish(word)) {
+            lemmaList = englishMorphology.luceneMorph.getNormalForms(word);
         }
         return lemmaList;
     }

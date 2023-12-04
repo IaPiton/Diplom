@@ -10,7 +10,6 @@ import org.jsoup.nodes.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 
 import org.springframework.transaction.annotation.Transactional;
 import searchengine.config.SiteConfig;
@@ -20,7 +19,7 @@ import searchengine.repository.IndexesRepository;
 import searchengine.repository.LemmaRepository;
 import searchengine.repository.PageRepository;
 import searchengine.repository.SiteRepository;
-import searchengine.utils.Lemmanisator;
+import searchengine.services.SearchService;
 
 import java.io.IOException;
 
@@ -92,16 +91,18 @@ public class DateBaseService {
         }
         Page page = addPageToDateBase(path, code, content, site, pageId);
         if (code == 200) {
-            Lemmanisator lemmanisator = new Lemmanisator();
-            HashMap<String, Integer> lemma = lemmanisator.textToLemma(content);
-            HashMap<Integer, Integer> lemmaMap;
-            lemmaMap = addLemmaToDateBase(lemma, site);
-            indexAddToDB(lemmaMap, page);
+            content = SearchService.cleanCodeForm(content, "body");
+            createIndexAndLemma(content, page, site);
         }
-        updateSite(site, Status.INDEXING);
     }
 
-    public HashMap<Integer, Integer> addLemmaToDateBase(HashMap<String, Integer> lemmaMap, Site site) {
+    public void createIndexAndLemma(String content, Page page, Site site) throws IOException {
+        Lemmanisator lemmanisator = new Lemmanisator();
+        HashMap<String, Integer> lemma = lemmanisator.textToLemma(content);
+        addLemmaToDateBase(lemma, site, page);
+    }
+
+    public void addLemmaToDateBase(HashMap<String, Integer> lemmaMap, Site site, Page page) {
         HashMap<Integer, Integer> lemmasMap = new HashMap<>();
         for (String lemmas : lemmaMap.keySet()) {
             Lemma lemma = new Lemma();
@@ -120,10 +121,10 @@ public class DateBaseService {
             }
             lemmasMap.put(idLemma, lemmaMap.get(lemmas));
         }
-        return lemmasMap;
+        indexAddToDB(lemmasMap, page, site);
     }
 
-    public void indexAddToDB(HashMap<Integer, Integer> lemma, Page page) {
+    public void indexAddToDB(HashMap<Integer, Integer> lemma, Page page, Site site) {
         List<Indexes> indexesList = new ArrayList<>();
         for (Integer idLemma : lemma.keySet()) {
             Indexes index = new Indexes();
@@ -133,6 +134,7 @@ public class DateBaseService {
             indexesList.add(index);
         }
         indexesRepository.saveAllAndFlush(indexesList);
+        updateSite(site, Status.INDEXING);
     }
 
     @Transactional

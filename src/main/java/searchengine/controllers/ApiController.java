@@ -10,6 +10,8 @@ import searchengine.dto.ResultDto;
 import searchengine.dto.SearchDto;
 import searchengine.dto.statistics.StatisticsResponse;
 
+import searchengine.model.Site;
+import searchengine.model.Status;
 import searchengine.repository.SiteRepository;
 import searchengine.services.IndexingService;
 import searchengine.services.SearchService;
@@ -65,7 +67,7 @@ public class ApiController {
             @RequestParam(value = "query") String query,
             @RequestParam(value = "site", required = false) String site,
             @RequestParam(value = "offset", defaultValue = "0", required = false) int offset,
-            @RequestParam(value = "limit", defaultValue = "20", required = false) int limit) {
+            @RequestParam(value = "limit", defaultValue = "5", required = false) int limit) {
         List<SearchDto> searchData;
         if (query.isEmpty()) {
             return new ResultDto(false, "Задан пустой поисковый запрос");
@@ -75,9 +77,16 @@ public class ApiController {
                 return new ResultDto(false, "Данная страница находится за пределами сайтов,\n" +
                         "указанных в конфигурационном файле", HttpStatus.BAD_REQUEST);
             } else {
-                searchData = searchService.search(query, site, offset, 30);
+                List<Site> siteList = siteRepository.findByUrl(site);
+                if ((siteList.get(0).getStatus() != Status.INDEXED)) {
+                    return new ResultDto(false, "Сайт индексируется");
+                }
+                searchData = searchService.search(query, siteList, offset, 30);
             }
         } else {
+            if (DateBaseService.getIndexingRun().get()) {
+                return new ResultDto(false, "Идет индексация сайтов", HttpStatus.BAD_REQUEST);
+            }
             searchData = searchService.fullSearch(query, offset, 30);
         }
         return new ResultDto(true, DateBaseService.getCountPage().get(), searchData, HttpStatus.OK);
