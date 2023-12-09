@@ -75,7 +75,7 @@ public class IndexingService {
         CopyOnWriteArraySet<String> linksSet = new CopyOnWriteArraySet<>();
         ParserLinks parserLinks = new ParserLinks(siteInDateBase.getUrl() + "/", linksSet, siteInDateBase);
         parseConfig(parserLinks);
-        ForkJoinPool pool = new ForkJoinPool(Runtime.getRuntime().availableProcessors());
+        ForkJoinPool pool = new ForkJoinPool();
         pool.invoke(parserLinks);
         indexingFinish(siteInDateBase);
         if (DateBaseService.getCountSite().get() == DateBaseService.getIndexedSite().get()) {

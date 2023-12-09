@@ -10,6 +10,7 @@ import java.util.Collection;
 @Entity
 @Data
 @Table(name = "lemma", indexes = @Index(columnList = "lemma"))
+
 public class Lemma {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)

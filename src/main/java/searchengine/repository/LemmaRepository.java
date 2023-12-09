@@ -25,7 +25,7 @@ public interface LemmaRepository extends JpaRepository<Lemma, Integer> {
             nativeQuery = true)
     void deleteLemmaPathByPage(@Param("id") Integer id);
 
-
+@Transactional
     @Query(value = "select l.id from Lemma l where l.lemma = ?1 and l.site_id = ?2", nativeQuery = true)
     Integer idToLemmaInt(String lemma, Integer siteId);
 
@@ -44,4 +44,8 @@ public interface LemmaRepository extends JpaRepository<Lemma, Integer> {
             , nativeQuery = true)
     Integer frequencyLemma(@Param("lemma") String lemma,
                            @Param("siteId") List<Integer> siteId);
+
+    boolean existsByLemma(String lemmas);
+@Transactional
+    Lemma findByLemma(String lemmas);
 }
