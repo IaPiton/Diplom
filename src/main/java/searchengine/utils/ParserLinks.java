@@ -54,8 +54,13 @@ public class ParserLinks extends RecursiveAction {
                 Elements resultLinks = document.select("a[href]");
                 for (Element resultLink : resultLinks) {
                     String absLink = resultLink.attr("abs:href");
-                    if (!(absLink.startsWith(url)
-                            && !(absLink.contains("#")) && absLink.length() > url.length() && !isFile(url))) {
+                    if (!absLink.startsWith(site.getUrl())) {
+                        continue;
+                    }
+                    if (absLink.contains("#")) {
+                        continue;
+                    }
+                    if (isFile(absLink)) {
                         continue;
                     }
                     if (!(linksSet.add(absLink))) {
@@ -79,7 +84,8 @@ public class ParserLinks extends RecursiveAction {
                 dateBaseService.updateLastError(site, url + " - " + "Страница пустая");
             } catch (ParserConfigurationException | IOException | SQLException ex) {
                 dateBaseService.updateLastError(site, url + " - " + ex.getMessage());
-            } catch (InterruptedException e) {
+            }
+            catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
         }
@@ -114,6 +120,7 @@ public class ParserLinks extends RecursiveAction {
         return link.contains(".jpg")
                 || link.contains(".jpeg")
                 || link.contains(".png")
+                || link.contains(".jpg")
                 || link.contains(".gif")
                 || link.contains(".webp")
                 || link.contains(".pdf")
