@@ -1,7 +1,6 @@
 package searchengine.utils;
 
 
-import jakarta.persistence.Version;
 import lombok.Data;
 
 
@@ -11,6 +10,7 @@ import org.jsoup.nodes.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.stereotype.Component;
+
 
 import org.springframework.transaction.annotation.Transactional;
 import searchengine.config.SiteConfig;
@@ -102,40 +102,67 @@ public class DateBaseService {
         HashMap<String, Integer> lemma = lemmanisator.textToLemma(content);
         addLemmaToDateBase(lemma, site, page);
     }
-@Version
+@Transactional
     public void addLemmaToDateBase(HashMap<String, Integer> lemmaMap, Site site, Page page) {
-        HashMap<Integer, Integer> lemmasMap = new HashMap<>();
+        List<Lemma> updateLemma = new ArrayList<>();
         for (String lemmas : lemmaMap.keySet()) {
-            Integer idLemma = null;
-            Lemma lemma = new Lemma();
-            idLemma = lemmaRepository.idToLemmaInt(lemmas, site.getId());
-            lemma.setLemma(lemmas);
-            lemma.setSiteByLemma(site);
-            if (idLemma == null) {
+            if (!lemmaRepository.existsByLemmaAndSiteByLemma(lemmas, site)) {
+                Lemma lemma = new Lemma();
+                lemma.setLemma(lemmas);
+                lemma.setSiteByLemma(site);
                 lemma.setFrequency(1);
-            } else {
-                lemma.setId(idLemma);
-                lemma.setFrequency(lemmaRepository.frequencyById(idLemma) + 1);
+                lemmaRepository.saveAndFlush(lemma);
+            }else{
+                Lemma lemma = new Lemma();
+                lemma = lemmaRepository.findByLemmaAndSiteByLemma(lemmas, site);
+                updateLemma.add(lemma);
             }
-            lemmaRepository.saveAndFlush(lemma);
-            if (idLemma == null) {
-                idLemma = lemma.getId();
-            }
-            lemmasMap.put(idLemma, lemmaMap.get(lemmas));
         }
-        indexAddToDB(lemmasMap, page, site);
+        updateLemma(updateLemma, lemmaMap, page, site);
+    }
+@Transactional
+    private void updateLemma(List<Lemma> updateLemma, HashMap<String, Integer> lemmaMap, Page page, Site site) {
+        for (Lemma lemma : updateLemma){
+            lemma.setFrequency(lemma.getFrequency() + 1);
+            lemmaRepository.saveAndFlush(lemma);
+        }
+        indexAddToDB(lemmaMap,page, site);
     }
 
-    public void indexAddToDB(HashMap<Integer, Integer> lemma, Page page, Site site) {
-        List<Indexes> indexesList = new ArrayList<>();
-        for (Integer idLemma : lemma.keySet()) {
+//@Version
+//    public void addLemmaToDateBase(HashMap<String, Integer> lemmaMap, Site site, Page page) {
+//        HashMap<Integer, Integer> lemmasMap = new HashMap<>();
+//        for (String lemmas : lemmaMap.keySet()) {
+//            Integer idLemma = null;
+//            Lemma lemma = new Lemma();
+//            idLemma = lemmaRepository.idToLemmaInt(lemmas, site.getId());
+//            lemma.setLemma(lemmas);
+//            lemma.setSiteByLemma(site);
+//            if (idLemma == null) {
+//                lemma.setFrequency(1);
+//            } else {
+//                lemma.setId(idLemma);
+//                lemma.setFrequency(lemmaRepository.frequencyById(idLemma) + 1);
+//            }
+//            lemmaRepository.saveAndFlush(lemma);
+//            if (idLemma == null) {
+//                idLemma = lemma.getId();
+//            }
+//            lemmasMap.put(idLemma, lemmaMap.get(lemmas));
+//        }
+//        indexAddToDB(lemmasMap, page, site);
+//    }
+@Transactional
+    public void indexAddToDB(HashMap<String, Integer> lemmaMap, Page page, Site site) {
+
+        for (String lemmas : lemmaMap.keySet()) {
             Indexes index = new Indexes();
+            Lemma lemma = lemmaRepository.findByLemmaAndSiteByLemma(lemmas, site);
             index.setPageByIndex(page);
-            index.setLemmaByIndex(lemmaRepository.getReferenceById(idLemma));
-            index.setRankLemma(lemma.get(idLemma));
-            indexesList.add(index);
+            index.setLemmaByIndex(lemma);
+            index.setRankLemma(lemmaMap.get(lemmas));
+            indexesRepository.saveAndFlush(index);
         }
-        indexesRepository.saveAllAndFlush(indexesList);
         updateSite(site, Status.INDEXING);
     }
 

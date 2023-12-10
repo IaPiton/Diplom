@@ -16,6 +16,7 @@ import searchengine.model.Site;
 
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
+import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.sql.SQLException;
 import java.util.*;
@@ -67,7 +68,7 @@ public class ParserLinks extends RecursiveAction {
                         continue;
                     }
                     try {
-                        Thread.sleep(2500);
+                        Thread.sleep(1500);
                     } catch (InterruptedException e) {
                         log.info("Произошло прерывание потока");
                     }
@@ -82,6 +83,8 @@ public class ParserLinks extends RecursiveAction {
                 }
             } catch (NullPointerException ex) {
                 dateBaseService.updateLastError(site, url + " - " + "Страница пустая");
+            } catch (SocketException e) {
+                log.info("Перезагрузка соединения");
             } catch (ParserConfigurationException | IOException | SQLException ex) {
                 dateBaseService.updateLastError(site, url + " - " + ex.getMessage());
             }
