@@ -1,6 +1,7 @@
 package searchengine.utils;
 
 
+import jakarta.persistence.Version;
 import lombok.Data;
 
 
@@ -101,12 +102,13 @@ public class DateBaseService {
         HashMap<String, Integer> lemma = lemmanisator.textToLemma(content);
         addLemmaToDateBase(lemma, site, page);
     }
-
+@Version
     public void addLemmaToDateBase(HashMap<String, Integer> lemmaMap, Site site, Page page) {
         HashMap<Integer, Integer> lemmasMap = new HashMap<>();
         for (String lemmas : lemmaMap.keySet()) {
+            Integer idLemma = null;
             Lemma lemma = new Lemma();
-            Integer idLemma = lemmaRepository.idToLemmaInt(lemmas, site.getId());
+            idLemma = lemmaRepository.idToLemmaInt(lemmas, site.getId());
             lemma.setLemma(lemmas);
             lemma.setSiteByLemma(site);
             if (idLemma == null) {
