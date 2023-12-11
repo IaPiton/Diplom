@@ -9,6 +9,7 @@ import lombok.Setter;
 import org.jsoup.nodes.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import org.springframework.data.annotation.Version;
 import org.springframework.stereotype.Component;
 
 
@@ -58,19 +59,19 @@ public class DateBaseService {
     @Getter
     private static AtomicInteger indexedSite = new AtomicInteger(0);
 
-    @Transactional
+
     public Site findSiteByName(Site site) {
         return siteRepository.findByName(site.getName());
     }
 
-    @Transactional
+
     public Site updateSite(Site site, Status status) {
         site.setStatus(status);
         site.setStatusTime(LocalDateTime.now());
         return siteRepository.saveAndFlush(site);
     }
 
-    @Transactional
+
     public Page addPageToDateBase(String path, int code, String content, Site site, int pageId) {
         Page page = new Page();
         if (!(pageId == 0)) {
@@ -102,78 +103,78 @@ public class DateBaseService {
         HashMap<String, Integer> lemma = lemmanisator.textToLemma(content);
         addLemmaToDateBase(lemma, site, page);
     }
-@Transactional
-    public void addLemmaToDateBase(HashMap<String, Integer> lemmaMap, Site site, Page page) {
-        List<Lemma> updateLemma = new ArrayList<>();
-        for (String lemmas : lemmaMap.keySet()) {
-            if (!lemmaRepository.existsByLemmaAndSiteByLemma(lemmas, site)) {
-                Lemma lemma = new Lemma();
-                lemma.setLemma(lemmas);
-                lemma.setSiteByLemma(site);
-                lemma.setFrequency(1);
-                lemmaRepository.saveAndFlush(lemma);
-            }else{
-                Lemma lemma = new Lemma();
-                lemma = lemmaRepository.findByLemmaAndSiteByLemma(lemmas, site);
-                updateLemma.add(lemma);
-            }
-        }
-        updateLemma(updateLemma, lemmaMap, page, site);
-    }
-@Transactional
-    private void updateLemma(List<Lemma> updateLemma, HashMap<String, Integer> lemmaMap, Page page, Site site) {
-        for (Lemma lemma : updateLemma){
-            lemma.setFrequency(lemma.getFrequency() + 1);
-            lemmaRepository.saveAndFlush(lemma);
-        }
-        indexAddToDB(lemmaMap,page, site);
-    }
 
-//@Version
 //    public void addLemmaToDateBase(HashMap<String, Integer> lemmaMap, Site site, Page page) {
-//        HashMap<Integer, Integer> lemmasMap = new HashMap<>();
+//        List<Lemma> updateLemma = new ArrayList<>();
 //        for (String lemmas : lemmaMap.keySet()) {
-//            Integer idLemma = null;
-//            Lemma lemma = new Lemma();
-//            idLemma = lemmaRepository.idToLemmaInt(lemmas, site.getId());
-//            lemma.setLemma(lemmas);
-//            lemma.setSiteByLemma(site);
-//            if (idLemma == null) {
+//            if (!lemmaRepository.existsByLemmaAndSiteByLemma(lemmas, site)) {
+//                Lemma lemma = new Lemma();
+//                lemma.setLemma(lemmas);
+//                lemma.setSiteByLemma(site);
 //                lemma.setFrequency(1);
-//            } else {
-//                lemma.setId(idLemma);
-//                lemma.setFrequency(lemmaRepository.frequencyById(idLemma) + 1);
+//                lemmaRepository.saveAndFlush(lemma);
+//            }else{
+//                Lemma lemma = new Lemma();
+//                lemma = lemmaRepository.findByLemmaAndSiteByLemma(lemmas, site);
+//                updateLemma.add(lemma);
 //            }
-//            lemmaRepository.saveAndFlush(lemma);
-//            if (idLemma == null) {
-//                idLemma = lemma.getId();
-//            }
-//            lemmasMap.put(idLemma, lemmaMap.get(lemmas));
 //        }
-//        indexAddToDB(lemmasMap, page, site);
+//        updateLemma(updateLemma, lemmaMap, page, site);
 //    }
-@Transactional
-    public void indexAddToDB(HashMap<String, Integer> lemmaMap, Page page, Site site) {
+//
+//    private void updateLemma(List<Lemma> updateLemma, HashMap<String, Integer> lemmaMap, Page page, Site site) {
+//        for (Lemma lemma : updateLemma){
+//            lemma.setFrequency(lemma.getFrequency() + 1);
+//            lemmaRepository.saveAndFlush(lemma);
+//        }
+//        indexAddToDB(lemmaMap,page, site);
+//    }
 
+@Version
+    public void addLemmaToDateBase(HashMap<String, Integer> lemmaMap, Site site, Page page) {
+        HashMap<Integer, Integer> lemmasMap = new HashMap<>();
         for (String lemmas : lemmaMap.keySet()) {
+            Integer idLemma = null;
+            Lemma lemma = new Lemma();
+            idLemma = lemmaRepository.idToLemmaInt(lemmas, site.getId());
+            lemma.setLemma(lemmas);
+            lemma.setSiteByLemma(site);
+            if (idLemma == null) {
+                lemma.setFrequency(1);
+            } else {
+                lemma.setId(idLemma);
+                lemma.setFrequency(lemmaRepository.frequencyById(idLemma) + 1);
+            }
+            lemmaRepository.saveAndFlush(lemma);
+            if (idLemma == null) {
+                idLemma = lemma.getId();
+            }
+            lemmasMap.put(idLemma, lemmaMap.get(lemmas));
+        }
+        indexAddToDB(lemmasMap, page, site);
+    }
+
+    public void indexAddToDB(HashMap<Integer, Integer> lemmaMap, Page page, Site site) {
+
+        for (Integer lemmaId : lemmaMap.keySet()) {
             Indexes index = new Indexes();
-            Lemma lemma = lemmaRepository.findByLemmaAndSiteByLemma(lemmas, site);
+            Lemma lemma = lemmaRepository.findLemmaById(lemmaId);
             index.setPageByIndex(page);
             index.setLemmaByIndex(lemma);
-            index.setRankLemma(lemmaMap.get(lemmas));
+            index.setRankLemma(lemmaMap.get(lemmaId));
             indexesRepository.saveAndFlush(index);
         }
         updateSite(site, Status.INDEXING);
     }
 
-    @Transactional
+
     public Site updateLastError(Site site, String errorMessage) {
         site.setLastError(errorMessage);
         site.setStatusTime(LocalDateTime.now());
-        return siteRepository.save(site);
+        return siteRepository.saveAndFlush(site);
     }
 
-    @Transactional
+
     public List<Integer> findPathByPage(String path) {
         List<Integer> result = pageRepository.findPathByPage(path);
         return result;

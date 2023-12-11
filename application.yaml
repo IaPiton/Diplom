@@ -5,6 +5,8 @@ spring:
     url: jdbc:mysql://localhost:3306/search_engine?useSSL=false&requireSSL=false&allowPublicKeyRetrieval=true
     username: root
     password: Testtest
+    hikari:
+      maximumPoolSize: 100
   jpa:
     hibernate:
       dialect: org.hibernate.dialect.MySQLDialect
@@ -14,8 +16,8 @@ indexing-settings:
   sites:
 #    - url: http://музей-ямщика.рф
 #      name: Музей Ямщика
-    - url: http://playback.ru
-      name: PlayBack.Ru
+#    - url: http://playback.ru
+#      name: PlayBack.Ru
 #    - url: https://ipfran.ru
 #      name: Ipfran.ru
 #    - url: https://et-cetera.ru/mobile
