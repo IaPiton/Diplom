@@ -47,6 +47,7 @@ public class ParserLinks extends RecursiveAction {
 
     @Override
     protected void compute() {
+
         if (!DateBaseService.getIndexingStop().get()) {
             Set<ParserLinks> tasks = new TreeSet<>(Comparator.comparing(o -> o.url));
             try {
@@ -87,9 +88,11 @@ public class ParserLinks extends RecursiveAction {
                 log.info("Перезагрузка соединения");
             } catch (ParserConfigurationException | IOException | SQLException ex) {
                 dateBaseService.updateLastError(site, url + " - " + ex.getMessage());
+
             }
             catch (InterruptedException e) {
                 throw new RuntimeException(e);
+
             }
         }
     }

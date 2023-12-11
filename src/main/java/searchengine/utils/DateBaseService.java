@@ -1,6 +1,5 @@
 package searchengine.utils;
 
-
 import lombok.Data;
 
 
@@ -64,14 +63,15 @@ public class DateBaseService {
         return siteRepository.findByName(site.getName());
     }
 
-
+@Transactional
     public Site updateSite(Site site, Status status) {
         site.setStatus(status);
         site.setStatusTime(LocalDateTime.now());
-        return siteRepository.saveAndFlush(site);
+        siteRepository.saveAndFlush(site);
+        return site;
     }
 
-
+    @Transactional
     public Page addPageToDateBase(String path, int code, String content, Site site, int pageId) {
         Page page = new Page();
         if (!(pageId == 0)) {
@@ -104,33 +104,7 @@ public class DateBaseService {
         addLemmaToDateBase(lemma, site, page);
     }
 
-//    public void addLemmaToDateBase(HashMap<String, Integer> lemmaMap, Site site, Page page) {
-//        List<Lemma> updateLemma = new ArrayList<>();
-//        for (String lemmas : lemmaMap.keySet()) {
-//            if (!lemmaRepository.existsByLemmaAndSiteByLemma(lemmas, site)) {
-//                Lemma lemma = new Lemma();
-//                lemma.setLemma(lemmas);
-//                lemma.setSiteByLemma(site);
-//                lemma.setFrequency(1);
-//                lemmaRepository.saveAndFlush(lemma);
-//            }else{
-//                Lemma lemma = new Lemma();
-//                lemma = lemmaRepository.findByLemmaAndSiteByLemma(lemmas, site);
-//                updateLemma.add(lemma);
-//            }
-//        }
-//        updateLemma(updateLemma, lemmaMap, page, site);
-//    }
-//
-//    private void updateLemma(List<Lemma> updateLemma, HashMap<String, Integer> lemmaMap, Page page, Site site) {
-//        for (Lemma lemma : updateLemma){
-//            lemma.setFrequency(lemma.getFrequency() + 1);
-//            lemmaRepository.saveAndFlush(lemma);
-//        }
-//        indexAddToDB(lemmaMap,page, site);
-//    }
-
-@Version
+    @Transactional
     public void addLemmaToDateBase(HashMap<String, Integer> lemmaMap, Site site, Page page) {
         HashMap<Integer, Integer> lemmasMap = new HashMap<>();
         for (String lemmas : lemmaMap.keySet()) {
@@ -153,7 +127,7 @@ public class DateBaseService {
         }
         indexAddToDB(lemmasMap, page, site);
     }
-
+    @Transactional
     public void indexAddToDB(HashMap<Integer, Integer> lemmaMap, Page page, Site site) {
 
         for (Integer lemmaId : lemmaMap.keySet()) {
@@ -167,11 +141,12 @@ public class DateBaseService {
         updateSite(site, Status.INDEXING);
     }
 
-
+    @Transactional
     public Site updateLastError(Site site, String errorMessage) {
         site.setLastError(errorMessage);
         site.setStatusTime(LocalDateTime.now());
-        return siteRepository.saveAndFlush(site);
+        siteRepository.saveAndFlush(site);
+        return site;
     }
 
 

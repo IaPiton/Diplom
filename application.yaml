@@ -14,8 +14,8 @@ spring:
       ddl-auto: create
 indexing-settings:
   sites:
-#    - url: http://музей-ямщика.рф
-#      name: Музей Ямщика
+    - url: http://музей-ямщика.рф
+      name: Музей Ямщика
 #    - url: http://playback.ru
 #      name: PlayBack.Ru
 #    - url: https://ipfran.ru

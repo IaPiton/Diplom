@@ -132,6 +132,7 @@ public class IndexingService {
         ForkJoinPool pool = new ForkJoinPool(Runtime.getRuntime().availableProcessors());
         parseConfig(parserLinks);
         pool.invoke(parserLinks);
+        System.out.println(Thread.activeCount());
         indexingFinish(siteInDateBase);
         DateBaseService.setIndexingRun(new AtomicBoolean(false));
         return new ResultDto(true);
