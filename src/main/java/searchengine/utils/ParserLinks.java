@@ -16,13 +16,11 @@ import searchengine.model.Site;
 
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
-import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.RecursiveAction;
-
 
 @Data
 @Component
@@ -47,15 +45,18 @@ public class ParserLinks extends RecursiveAction {
 
     @Override
     protected void compute() {
-
         if (!DateBaseService.getIndexingStop().get()) {
             Set<ParserLinks> tasks = new TreeSet<>(Comparator.comparing(o -> o.url));
             try {
+                Thread.sleep(600);
                 Document document = getDocument(url);
                 dateBaseService.addEntitiesToDateBase(document, url, codeResponse, site, 0);
                 Elements resultLinks = document.select("a[href]");
                 for (Element resultLink : resultLinks) {
                     String absLink = resultLink.attr("abs:href");
+                    if (absLink.length() > 255) {
+                        continue;
+                    }
                     if (!absLink.startsWith(site.getUrl())) {
                         continue;
                     }
@@ -68,11 +69,6 @@ public class ParserLinks extends RecursiveAction {
                     if (!(linksSet.add(absLink))) {
                         continue;
                     }
-                    try {
-                        Thread.sleep(1500);
-                    } catch (InterruptedException e) {
-                        log.info("Произошло прерывание потока");
-                    }
                     ParserLinks task = new ParserLinks(absLink, linksSet, site);
                     task.setParserConfig(parserConfig);
                     task.setDateBaseService(dateBaseService);
@@ -83,16 +79,15 @@ public class ParserLinks extends RecursiveAction {
                     task.join();
                 }
             } catch (NullPointerException ex) {
-                dateBaseService.updateLastError(site, url + " - " + "Страница пустая");
-            } catch (SocketException e) {
-                log.info("Перезагрузка соединения");
-            } catch (ParserConfigurationException | IOException | SQLException ex) {
-                dateBaseService.updateLastError(site, url + " - " + ex.getMessage());
-
-            }
-            catch (InterruptedException e) {
+            } catch (SQLException e) {
                 throw new RuntimeException(e);
-
+            } catch (ParserConfigurationException e) {
+                throw new RuntimeException(e);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            } catch (InterruptedException e) {
+                log.info("Произошло прерывание потока");
+                throw new RuntimeException(e);
             }
         }
     }
@@ -118,6 +113,7 @@ public class ParserLinks extends RecursiveAction {
             e.printStackTrace();
             codeResponse = 404;
         }
+
         return doc;
     }
 

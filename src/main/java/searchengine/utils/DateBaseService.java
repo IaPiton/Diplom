@@ -8,9 +8,7 @@ import lombok.Setter;
 import org.jsoup.nodes.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import org.springframework.data.annotation.Version;
 import org.springframework.stereotype.Component;
-
 
 import org.springframework.transaction.annotation.Transactional;
 import searchengine.config.SiteConfig;
@@ -24,10 +22,13 @@ import searchengine.services.SearchService;
 
 import java.io.IOException;
 
+import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.ReentrantLock;
 
 @Component
 @Data
@@ -57,13 +58,14 @@ public class DateBaseService {
     @Setter
     @Getter
     private static AtomicInteger indexedSite = new AtomicInteger(0);
+    ReentrantLock lock = new ReentrantLock();
 
 
     public Site findSiteByName(Site site) {
         return siteRepository.findByName(site.getName());
     }
 
-@Transactional
+    @Transactional
     public Site updateSite(Site site, Status status) {
         site.setStatus(status);
         site.setStatusTime(LocalDateTime.now());
@@ -84,58 +86,63 @@ public class DateBaseService {
         pageRepository.saveAndFlush(page);
         return page;
     }
-
     public void addEntitiesToDateBase(Document doc, String url, int code, Site site, int pageId) throws IOException, InterruptedException {
         String path = url.substring(url.indexOf('/', url.indexOf(".")));
-        String content = "Page not found";
-        if (!(doc == null)) {
-            content = doc.html();
+        String content = "";
+        if (doc == null) {
+            content = "Page not found";
+            updateLastError(site, url + " - " + "Страница пустая");
         }
+        content = doc.html();
         Page page = addPageToDateBase(path, code, content, site, pageId);
         if (code == 200) {
             content = SearchService.cleanCodeForm(content, "body");
             createIndexAndLemma(content, page, site);
         }
-    }
 
+    }
     public void createIndexAndLemma(String content, Page page, Site site) throws IOException {
         Lemmanisator lemmanisator = new Lemmanisator();
         HashMap<String, Integer> lemma = lemmanisator.textToLemma(content);
         addLemmaToDateBase(lemma, site, page);
     }
 
-    @Transactional
     public void addLemmaToDateBase(HashMap<String, Integer> lemmaMap, Site site, Page page) {
-        HashMap<Integer, Integer> lemmasMap = new HashMap<>();
-        for (String lemmas : lemmaMap.keySet()) {
-            Integer idLemma = null;
-            Lemma lemma = new Lemma();
-            idLemma = lemmaRepository.idToLemmaInt(lemmas, site.getId());
-            lemma.setLemma(lemmas);
-            lemma.setSiteByLemma(site);
-            if (idLemma == null) {
-                lemma.setFrequency(1);
-            } else {
-                lemma.setId(idLemma);
-                lemma.setFrequency(lemmaRepository.frequencyById(idLemma) + 1);
-            }
-            lemmaRepository.saveAndFlush(lemma);
-            if (idLemma == null) {
-                idLemma = lemma.getId();
-            }
-            lemmasMap.put(idLemma, lemmaMap.get(lemmas));
-        }
-        indexAddToDB(lemmasMap, page, site);
-    }
-    @Transactional
-    public void indexAddToDB(HashMap<Integer, Integer> lemmaMap, Page page, Site site) {
+        try {
+            TreeMap<Lemma, Integer> indexesMap = new TreeMap<>();
+            for (String lemmas : lemmaMap.keySet()) {
+                Lemma lemma = new Lemma();
+                if (!lemmaRepository.existsByLemmaAndSiteByLemma(lemmas, site)) {
+                    lemma.setLemma(lemmas);
+                    lemma.setSiteByLemma(site);
+                    lemma.setFrequency(1);
+                    lemmaRepository.saveAndFlush(lemma);
+                    indexesMap.put(lemma, lemmaMap.get(lemmas));
+                } else {
+                   Set<Lemma> lemmaSet = lemmaRepository.findByLemmaAndSiteByLemma(lemmas, site);
+                   if (lemmaSet.size() > 2){
+                    lemmaSet = lemmaRepository.findByLemmaAndSiteByLemma(lemmas, site);
+                   }
+                   lemma = lemmaSet.iterator().next();
+                   lemma.setFrequency(lemma.getFrequency() + 1);
+                   lemmaRepository.saveAndFlush(lemma);
+                    indexesMap.put(lemma, lemmaMap.get(lemmas));
+                    }
+                }
 
-        for (Integer lemmaId : lemmaMap.keySet()) {
+            indexAddToDB(indexesMap, page, site);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    @Transactional
+    public void indexAddToDB(TreeMap<Lemma, Integer> lemmaMap, Page page, Site site) {
+        for (Lemma lemma : lemmaMap.keySet()) {
             Indexes index = new Indexes();
-            Lemma lemma = lemmaRepository.findLemmaById(lemmaId);
             index.setPageByIndex(page);
             index.setLemmaByIndex(lemma);
-            index.setRankLemma(lemmaMap.get(lemmaId));
+            index.setRankLemma(lemmaMap.get(lemma));
             indexesRepository.saveAndFlush(index);
         }
         updateSite(site, Status.INDEXING);
@@ -149,12 +156,10 @@ public class DateBaseService {
         return site;
     }
 
-
     public List<Integer> findPathByPage(String path) {
         List<Integer> result = pageRepository.findPathByPage(path);
         return result;
     }
-
 
     public List<Integer> lemmaIdByPath(Integer idPath) {
         List<Integer> lemmaIdByPath = indexesRepository.findLemmaByPath(idPath);
