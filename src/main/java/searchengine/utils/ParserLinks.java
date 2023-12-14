@@ -16,6 +16,7 @@ import searchengine.model.Site;
 
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
+import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.sql.SQLException;
 import java.util.*;
@@ -45,6 +46,7 @@ public class ParserLinks extends RecursiveAction {
 
     @Override
     protected void compute() {
+       try{
         if (!DateBaseService.getIndexingStop().get()) {
             Set<ParserLinks> tasks = new TreeSet<>(Comparator.comparing(o -> o.url));
             try {
@@ -78,19 +80,21 @@ public class ParserLinks extends RecursiveAction {
                 for (ParserLinks task : tasks) {
                     task.join();
                 }
-            } catch (NullPointerException ex) {
+            } catch (SocketException ex) {
+                log.info("SocketException");
+            } catch(ParserConfigurationException e) {
+                log.info("SocketException");
+            }  catch (InterruptedException e) {
+                log.info("ParserConfigurationException");
             } catch (SQLException e) {
-                throw new RuntimeException(e);
-            } catch (ParserConfigurationException e) {
-                throw new RuntimeException(e);
+                log.info("SQLException");
             } catch (IOException e) {
-                throw new RuntimeException(e);
-            } catch (InterruptedException e) {
-                log.info("Произошло прерывание потока");
-                throw new RuntimeException(e);
+                log.info("IOException");
             }
         }
-    }
+    }catch (Exception e){
+           e.getMessage();
+       }}
 
     public Document getDocument(String url) throws ParserConfigurationException, SQLException, IOException {
         Document doc = null;
@@ -103,17 +107,21 @@ public class ParserLinks extends RecursiveAction {
                     .ignoreContentType(true);
             doc = connection.get();
             codeResponse = connection.response().statusCode();
-        } catch (HttpStatusException | SocketTimeoutException e) {
+        } catch (SocketTimeoutException e){
+            log.info("Превышен тайм-аут соединения");
+        } catch (HttpStatusException e) {
             codeResponse = 503;
             System.out.println(e.getLocalizedMessage());
         } catch (UnsupportedMimeTypeException e) {
             codeResponse = 404;
-            System.out.println(e.getMessage());
+            log.info("Страница " + url + " не доступна" );
         } catch (IOException e) {
-            e.printStackTrace();
+            log.info("Страница " + url + " не доступна" );
             codeResponse = 404;
+        }catch (NullPointerException ex) {
+            codeResponse = 404;
+            log.info("Страница " + url + " не доступна" );
         }
-
         return doc;
     }
 

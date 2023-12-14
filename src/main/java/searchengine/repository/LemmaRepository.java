@@ -46,6 +46,6 @@ public interface LemmaRepository extends JpaRepository<Lemma, Integer> {
     boolean existsByLemmaAndSiteByLemma(String lemmas, Site site);
 
 
-    @Transactional(readOnly = true)
-    Set<Lemma> findByLemmaAndSiteByLemma(String lemmas, Site site);
+    @Transactional
+    Lemma findFirstByLemmaAndSiteByLemma(String lemma, Site site);
 }

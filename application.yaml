@@ -19,8 +19,6 @@ indexing-settings:
       name: Музей Ямщика
     - url: http://playback.ru
       name: PlayBack.Ru
-    - url: https://et-cetera.ru/mobile
-      name: Et-cetera.ru
     - url: https://www.lutherancathedral.ru/
       name: Lutherancathedral.ru
     - url: https://www.svetlovka.ru/
