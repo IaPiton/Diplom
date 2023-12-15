@@ -232,6 +232,10 @@ public class SearchService {
                 }
                 next += 1;
             }
+            if (end == -1) {
+                start -= 50;
+                end = content.length();
+            }
             String word = content.substring(start, end);
             word = word.replaceAll("\\(", "").replaceAll("\\)", "");
             int sizeTextSniper = 100;

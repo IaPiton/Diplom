@@ -46,55 +46,54 @@ public class ParserLinks extends RecursiveAction {
 
     @Override
     protected void compute() {
-       try{
-        if (!DateBaseService.getIndexingStop().get()) {
-            Set<ParserLinks> tasks = new TreeSet<>(Comparator.comparing(o -> o.url));
-            try {
-                Thread.sleep(600);
-                Document document = getDocument(url);
-                dateBaseService.addEntitiesToDateBase(document, url, codeResponse, site, 0);
-                Elements resultLinks = document.select("a[href]");
-                for (Element resultLink : resultLinks) {
-                    String absLink = resultLink.attr("abs:href");
-                    if (absLink.length() > 255) {
-                        continue;
+            if (!DateBaseService.getIndexingStop().get()) {
+                Set<ParserLinks> tasks = new TreeSet<>(Comparator.comparing(o -> o.url));
+                try {
+                    Thread.sleep(600);
+                    Document document = getDocument(url);
+                    dateBaseService.addEntitiesToDateBase(document, url, codeResponse, site, 0);
+                    Elements resultLinks = document.select("a[href]");
+                    for (Element resultLink : resultLinks) {
+                        String absLink = resultLink.attr("abs:href");
+                        if (absLink.length() > 255) {
+                            continue;
+                        }
+                        if (!absLink.startsWith(site.getUrl())) {
+                            continue;
+                        }
+                        if (absLink.contains("#")) {
+                            continue;
+                        }
+                        if (isFile(absLink)) {
+                            continue;
+                        }
+                        if (!(linksSet.add(absLink))) {
+                            continue;
+                        }
+                        ParserLinks task = new ParserLinks(absLink, linksSet, site);
+                        task.setParserConfig(parserConfig);
+                        task.setDateBaseService(dateBaseService);
+                        task.fork();
+                        tasks.add(task);
                     }
-                    if (!absLink.startsWith(site.getUrl())) {
-                        continue;
+                    for (ParserLinks task : tasks) {
+                        task.join();
                     }
-                    if (absLink.contains("#")) {
-                        continue;
-                    }
-                    if (isFile(absLink)) {
-                        continue;
-                    }
-                    if (!(linksSet.add(absLink))) {
-                        continue;
-                    }
-                    ParserLinks task = new ParserLinks(absLink, linksSet, site);
-                    task.setParserConfig(parserConfig);
-                    task.setDateBaseService(dateBaseService);
-                    task.fork();
-                    tasks.add(task);
+                } catch (SocketException ex) {
+                    log.info("SocketException");
+                } catch(ParserConfigurationException e) {
+                    log.info("SocketException");
+                }  catch (InterruptedException e) {
+                    log.info("ParserConfigurationException");
+                } catch (SQLException e) {
+                    log.info("SQLException");
+                } catch (IOException e) {
+                    log.info("IOException");
+                }catch (NullPointerException e){
+                    log.info("Страница " + url + " пустая");
                 }
-                for (ParserLinks task : tasks) {
-                    task.join();
-                }
-            } catch (SocketException ex) {
-                log.info("SocketException");
-            } catch(ParserConfigurationException e) {
-                log.info("SocketException");
-            }  catch (InterruptedException e) {
-                log.info("ParserConfigurationException");
-            } catch (SQLException e) {
-                log.info("SQLException");
-            } catch (IOException e) {
-                log.info("IOException");
             }
         }
-    }catch (Exception e){
-           e.getMessage();
-       }}
 
     public Document getDocument(String url) throws ParserConfigurationException, SQLException, IOException {
         Document doc = null;
@@ -111,7 +110,7 @@ public class ParserLinks extends RecursiveAction {
             log.info("Превышен тайм-аут соединения");
         } catch (HttpStatusException e) {
             codeResponse = 503;
-            System.out.println(e.getLocalizedMessage());
+            log.info("Страница " + url + " не доступна" );
         } catch (UnsupportedMimeTypeException e) {
             codeResponse = 404;
             log.info("Страница " + url + " не доступна" );
