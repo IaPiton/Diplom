@@ -25,10 +25,7 @@ public class ResultDto {
         this.result = result;
     }
 
-    public ResultDto(boolean result, HttpStatus status) {
-        this.result = result;
-        this.status = status;
-    }
+
 
     public ResultDto(boolean result, String error) {
         this.result = result;
@@ -39,12 +36,6 @@ public class ResultDto {
         this.result = result;
         this.error = error;
         this.status = status;
-    }
-
-    public ResultDto(boolean result, int count, List<SearchDto> data) {
-        this.result = result;
-        this.count = count;
-        this.data = data;
     }
 
     public ResultDto(boolean result, int count, List<SearchDto> data, HttpStatus status) {

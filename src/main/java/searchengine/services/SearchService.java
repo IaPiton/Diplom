@@ -1,6 +1,6 @@
 package searchengine.services;
 
-import lombok.Getter;
+import lombok.Data;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -10,7 +10,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import searchengine.dto.ResultDto;
 import searchengine.dto.SearchDto;
 import searchengine.model.*;
 import searchengine.repository.IndexesRepository;
@@ -26,6 +25,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 @Service
+@Data
 public class SearchService {
     Lemmanisator lemmanisator = new Lemmanisator();
     @Autowired
@@ -82,7 +82,12 @@ public class SearchService {
             return searchDtoList;
         }
         lemmaByFrequency = sortedLemmaMap(lemmaByFrequency);
-        String minLemma = lemmaByFrequency.entrySet().stream().findFirst().get().getKey();
+        String minLemma = lemmaByFrequency
+                .entrySet()
+                .stream()
+                .findFirst()
+                .get()
+                .getKey();
         return coincidenceLemmaToPage(siteId, lemmaByFrequency, minLemma, queryList, offset, limit);
     }
 
@@ -113,7 +118,11 @@ public class SearchService {
     public List<SearchDto> createSearchList(List<Integer> pageId, String minLemma,
                                             List<String> queryList, int offset, int limit) {
         DateBaseService.setCountPage(new AtomicInteger(pageId.size()));
-        pageNumber = offset == 0 ? pageNumber = 0 : pageNumber++;
+        if(offset !=0){
+            pageNumber++;
+        }else{
+            pageNumber =0;
+        }
         Pageable pageable = PageRequest.of(pageNumber, limit, Sort.by("rank_lemma").descending());
         List<Indexes> indexesList = indexesRepository.findIndexByLemmaAndPage(pageId, minLemma, pageable);
         List<Page> pageList = new ArrayList<>();
@@ -157,10 +166,7 @@ public class SearchService {
         int limitTitle = 100;
         List<SearchDto> searchDtoList = new ArrayList<>();
         StringBuilder bodyStringBuilder = new StringBuilder();
-        List<Page> pages = new ArrayList<>();
-        for (Page page : relativeRelevanceMap.keySet()) {
-            pages.add(page);
-        }
+        List<Page> pages = new ArrayList<>(relativeRelevanceMap.keySet());
         for (Page page : pages) {
             String urlPage = page.getPath();
             String content = page.getContent();
@@ -198,8 +204,7 @@ public class SearchService {
 
     public List<String> textLemma(String query) {
         HashMap<String, Integer> searchLemmaMap = lemmanisator.textToLemma(query);
-        List<String> textLemmaList = new ArrayList<>(searchLemmaMap.keySet());
-        return textLemmaList;
+        return new ArrayList<>(searchLemmaMap.keySet());
     }
 
     public List<Integer> findLemmaIndex(String body, List<String> textLemmaList) {
@@ -225,7 +230,7 @@ public class SearchService {
             int start = lemmaIndex.get(i);
             int end = content.indexOf(" ", start);
             int next = i + 1;
-            while (next < lemmaIndex.size() && lemmaIndex.size() >= next) {
+            while (next < lemmaIndex.size()) {
                 if (lemmaIndex.get(next) - end < 25) {
                     end = content.indexOf(" ", lemmaIndex.get(next));
                     sizeSniper = sizeSniper - 1;

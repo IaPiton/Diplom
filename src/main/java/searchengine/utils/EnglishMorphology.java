@@ -17,12 +17,9 @@ public class EnglishMorphology {
 
     public Boolean wordCheck(String word) {
         List<String> wordBaseForms = luceneMorph.getMorphInfo(word);
-        if ((!wordBaseForms.get(0).endsWith("PREP") && (!wordBaseForms.get(0).endsWith("CONJ")) &&
+        return !wordBaseForms.get(0).endsWith("PREP") && (!wordBaseForms.get(0).endsWith("CONJ")) &&
                 (!wordBaseForms.get(0).endsWith("PART")) && (!wordBaseForms.get(0).endsWith("ADJECTIVE"))
-                && (!wordBaseForms.get(0).endsWith("ADVERB")))) {
-            return true;
-        }
-        return false;
+                && (!wordBaseForms.get(0).endsWith("ADVERB"));
     }
 
     public List<String> englishLemma(String word) {

@@ -17,12 +17,8 @@ public class RussianMorphology {
 
     public Boolean wordCheck(String word) {
         List<String> wordBaseForms = luceneMorph.getMorphInfo(word);
-
-        if ((!wordBaseForms.get(0).endsWith("ПРЕДЛ") && (!wordBaseForms.get(0).endsWith("СОЮЗ")) &&
-                (!wordBaseForms.get(0).endsWith("ЧАСТ")) && (!wordBaseForms.get(0).endsWith("МЕЖД")))) {
-            return true;
-        }
-        return false;
+        return !wordBaseForms.get(0).endsWith("ПРЕДЛ") && (!wordBaseForms.get(0).endsWith("СОЮЗ")) &&
+                (!wordBaseForms.get(0).endsWith("ЧАСТ")) && (!wordBaseForms.get(0).endsWith("МЕЖД"));
     }
 
     public List<String> russianLemma(String word) {

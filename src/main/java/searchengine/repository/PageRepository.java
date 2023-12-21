@@ -1,7 +1,6 @@
 package searchengine.repository;
 
 import jakarta.transaction.Transactional;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -26,13 +25,7 @@ public interface PageRepository extends JpaRepository<Page, Long> {
             nativeQuery = true)
     List<Integer> findPathByPage(@Param("url") String path);
 
-    @Transactional
-    @Modifying
-    @Query(value = "delete from Page p where p.id=:idPage",
-            nativeQuery = true)
-    void deletePathByPage(@Param("idPage") Integer idPage);
-
-    @Query(value = "SELECT p.id FROM Page p " +
+       @Query(value = "SELECT p.id FROM Page p " +
             "JOIN Indexes i ON i.page_id = p.id " +
             "JOIN Lemma l ON i.lemma_id = l.id " +
             "where l.lemma = ?1 and l.site_Id IN ?2", nativeQuery = true)

@@ -28,6 +28,6 @@ public class Page {
     @Column(name = "content", columnDefinition = "MEDIUMTEXT")
     private String content;
 
-    @OneToMany(mappedBy = "pageByIndex", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "pageByIndex")
     private Collection<Indexes> pagesById;
 }

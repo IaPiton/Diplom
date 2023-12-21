@@ -1,6 +1,6 @@
 package searchengine.utils;
 
-import lombok.Data;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Connection;
 import org.jsoup.HttpStatusException;
@@ -23,16 +23,19 @@ import java.util.*;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.RecursiveAction;
 
-@Data
+
 @Component
 @Slf4j
-public class ParserLinks extends RecursiveAction {
+public final class ParserLinks extends RecursiveAction {
     private String url;
     private CopyOnWriteArraySet<String> linksSet;
     private Site site;
     private int codeResponse;
+    @Autowired
+    @Setter
     private ParserConfig parserConfig;
     @Autowired
+    @Setter
     private DateBaseService dateBaseService;
 
     public ParserLinks() {
@@ -51,7 +54,7 @@ public class ParserLinks extends RecursiveAction {
                 try {
                     Thread.sleep(600);
                     Document document = getDocument(url);
-                    dateBaseService.addEntitiesToDateBase(document, url, codeResponse, site, 0);
+                    dateBaseService.addEntitiesToDateBase(document, url, codeResponse, site);
                     Elements resultLinks = document.select("a[href]");
                     for (Element resultLink : resultLinks) {
                         String absLink = resultLink.attr("abs:href");
@@ -79,11 +82,9 @@ public class ParserLinks extends RecursiveAction {
                     for (ParserLinks task : tasks) {
                         task.join();
                     }
-                } catch (SocketException ex) {
+                } catch (SocketException | ParserConfigurationException ex) {
                     log.info("SocketException");
-                } catch(ParserConfigurationException e) {
-                    log.info("SocketException");
-                }  catch (InterruptedException e) {
+                } catch (InterruptedException e) {
                     log.info("ParserConfigurationException");
                 } catch (SQLException e) {
                     log.info("SQLException");
@@ -94,6 +95,15 @@ public class ParserLinks extends RecursiveAction {
                 }
             }
         }
+
+    public void parserPage (String url, Site site) {
+        try {
+          Document document = getDocument(url);
+        dateBaseService.addEntitiesToDateBase(document, url, codeResponse , site);
+        } catch (ParserConfigurationException | SQLException | IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     public Document getDocument(String url) throws ParserConfigurationException, SQLException, IOException {
         Document doc = null;
@@ -111,34 +121,30 @@ public class ParserLinks extends RecursiveAction {
         } catch (HttpStatusException e) {
             codeResponse = 503;
             log.info("Страница " + url + " не доступна" );
-        } catch (UnsupportedMimeTypeException e) {
+        } catch (UnsupportedMimeTypeException | NullPointerException e) {
             codeResponse = 404;
             log.info("Страница " + url + " не доступна" );
         } catch (IOException e) {
             log.info("Страница " + url + " не доступна" );
             codeResponse = 404;
-        }catch (NullPointerException ex) {
-            codeResponse = 404;
-            log.info("Страница " + url + " не доступна" );
         }
         return doc;
     }
 
     private static boolean isFile(String link) {
-        link.toLowerCase();
-        return link.contains(".jpg")
-                || link.contains(".jpeg")
-                || link.contains(".png")
-                || link.contains(".jpg")
-                || link.contains(".gif")
-                || link.contains(".webp")
-                || link.contains(".pdf")
-                || link.contains(".eps")
-                || link.contains(".xlsx")
-                || link.contains(".doc")
-                || link.contains(".pptx")
-                || link.contains(".docx")
-                || link.contains(".zip")
-                || link.contains("?_ga");
+        return link.toLowerCase().contains(".jpg")
+                || link.toLowerCase().contains(".jpeg")
+                || link.toLowerCase().contains(".png")
+                || link.toLowerCase().contains(".gif")
+                || link.toLowerCase().contains(".webp")
+                || link.toLowerCase().contains(".pdf")
+                || link.toLowerCase().contains(".eps")
+                || link.toLowerCase().contains(".xlsx")
+                || link.toLowerCase().contains(".doc")
+                || link.toLowerCase().contains(".pptx")
+                || link.toLowerCase().contains(".docx")
+                || link.toLowerCase().contains(".zip")
+                || link.toLowerCase().contains("?_ga");
     }
+
 }

@@ -34,10 +34,10 @@ public class Site {
     @Column(name = "name", columnDefinition = "VARCHAR(255)")
     private String name;
 
-    @OneToMany(mappedBy = "siteByPage", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "siteByPage")
     private Collection<Page> pagesById;
 
-    @OneToMany(mappedBy = "siteByLemma", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "siteByLemma")
     private Collection<Lemma> lemmasById;
 
 }

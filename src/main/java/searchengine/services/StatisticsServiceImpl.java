@@ -1,5 +1,6 @@
 package searchengine.services;
 
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -22,6 +23,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Data
 public class StatisticsServiceImpl implements StatisticsService {
     @Autowired
     private SiteRepository siteRepository;

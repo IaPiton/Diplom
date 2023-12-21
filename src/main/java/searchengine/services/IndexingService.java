@@ -1,8 +1,8 @@
 package searchengine.services;
 
 import lombok.Data;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
@@ -17,6 +17,7 @@ import searchengine.repository.PageRepository;
 import searchengine.repository.SiteRepository;
 import searchengine.utils.DateBaseService;
 import searchengine.utils.ParserLinks;
+
 
 import java.util.ArrayList;
 import java.util.List;
@@ -52,7 +53,7 @@ public class IndexingService {
             ArrayList<Site> sites = siteConfig.getSites();
             DateBaseService.setIndexingRun(new AtomicBoolean(true));
             DateBaseService.setIndexingStop(new AtomicBoolean(false));
-            siteRepository.deleteAll();
+            dateBaseService.deleteAll();
             for (Site site : sites) {
                 DateBaseService.getCountSite().incrementAndGet();
                 CompletableFuture.runAsync(() -> {
@@ -81,6 +82,7 @@ public class IndexingService {
         }
     }
 
+    @SneakyThrows
     public ResultDto startIndexingPage(String url) {
         if (DateBaseService.getIndexingRun().get()) {
             return new ResultDto(false, "Индексация уже запущена, дождитесь " + "окончания индексации или остановите ее");
@@ -90,61 +92,42 @@ public class IndexingService {
                 if (url.toLowerCase().contains(siteForIndex.getUrl())) {
                     log.info("Страница - " + url + " - добавлена на переиндексацию");
                     indexingPage(url, siteForIndex);
-                    return new ResultDto(true, "Страница - " + url + " - добавлена на переиндексацию");
+                    return new ResultDto(true, "Страница - проиндексирована");
                 }
             }
             return new ResultDto(false, "Данная страница находится " + "за пределами сайтов, указаных в конфигурационном файле.");
         }
     }
 
-    public ResultDto indexingPage(String url, Site siteForIndex) {
+    public void indexingPage(String url, Site siteForIndex) {
         DateBaseService.setIndexingRun(new AtomicBoolean(true));
         DateBaseService.setIndexingStop(new AtomicBoolean(false));
-        return deletePage(url, siteForIndex);
+        deletePage(url, siteForIndex);
     }
 
-    public ResultDto deletePage(String url, Site siteForIndex) {
+    public void deletePage(String url, Site siteForIndex) {
         String path = url.substring(url.indexOf('/', url.indexOf(".")));
-        if(pageRepository.existsByPath(path)){
+        if (pageRepository.existsByPath(path)) {
             Page page = pageRepository.findPageByPath(path);
-            List <Indexes> indexesList = indexesRepository.findIndexesByPageByIndex(page);
+            List<Indexes> indexesList = indexesRepository.findIndexesByPageByIndex(page);
             dateBaseService.lemmaByIndexesUpdate(indexesList);
             pageRepository.delete(page);
         }
-
-//        if (!(dateBaseService.findPathByPage(path) == null)) {
-//            List<Integer> idPath = dateBaseService.findPathByPage(path);
-//            for (Integer idPage : idPath) {
-//                List<Integer> lemmaId = dateBaseService.lemmaIdByPath(idPage);
-//                for (Integer id : lemmaId) {
-//                    indexesRepository.deleteIndexPathByPage(id);
-//                    if (lemmaRepository.frequencyById(id) == 1) {
-//                        lemmaRepository.deleteLemmaPathByPage(id);
-//                    } else {
-//                        lemmaRepository.updateLemmaFrequencyDelete(id);
-//                    }
-//                }
-//                pageRepository.deletePathByPage(idPage);
-//            }
-//        }
-        return indexesPage(url, siteForIndex);
+        indexesPage(url, siteForIndex);
     }
 
-    public ResultDto indexesPage(String url, Site siteForIndex) {
+    public void indexesPage(String url, Site siteForIndex) {
         Site siteInDateBase = updatingSite(siteForIndex);
-        CopyOnWriteArraySet<String> linksSet = new CopyOnWriteArraySet<>();
-        ParserLinks parserLinks = new ParserLinks(url, linksSet, siteInDateBase);
-        ForkJoinPool pool = new ForkJoinPool(Runtime.getRuntime().availableProcessors());
+        ParserLinks parserLinks = new ParserLinks();
         parseConfig(parserLinks);
-        pool.invoke(parserLinks);
+        parserLinks.parserPage(url, siteForIndex);
         indexingFinish(siteInDateBase);
         DateBaseService.setIndexingRun(new AtomicBoolean(false));
-        return new ResultDto(true);
     }
 
     public ResultDto stopIndexing() {
         if (!DateBaseService.getIndexingRun().get()) {
-            new ResultDto(false, "Индексация не запущена").getError();
+            new ResultDto(false, "Индексация не запущена");
         } else {
             log.info("Остановка индексации");
             DateBaseService.setIndexingRun(new AtomicBoolean(false));
@@ -154,7 +137,7 @@ public class IndexingService {
     }
 
     public void indexingFinish(Site siteInDateBase) {
-        int finishedSite = DateBaseService.getIndexedSite().incrementAndGet();
+        DateBaseService.getIndexedSite().incrementAndGet();
         if (DateBaseService.getIndexingStop().get()) {
             siteInDateBase.setLastError("Индексация остановлена");
             dateBaseService.updateSite(siteInDateBase, Status.FAILED);

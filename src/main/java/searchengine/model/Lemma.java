@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import lombok.Data;
 
 import java.util.Collection;
-import java.util.Objects;
 
 @Entity
 @Data
@@ -20,7 +19,7 @@ public class Lemma {
     @JoinColumn(name = "site_id", referencedColumnName = "id", nullable = false)
     private Site siteByLemma;
 
-    @OneToMany(mappedBy = "lemmaByIndex", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "lemmaByIndex")
     private Collection<Indexes> indexesById;
 
     @Column(name = "lemma")

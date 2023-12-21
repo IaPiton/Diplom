@@ -22,29 +22,21 @@ public class Lemmanisator {
     }
 
     public String htmlClearing(String document) {
-        String clearingText = Jsoup.parse(document).text();
-        return clearingText;
+        return Jsoup.parse(document).text();
     }
 
     public Boolean wordsRussian(String word) {
-        if (word.matches(REGEXP_RUSSIAN_WORD)) {
-            return true;
-        }
-        return false;
+        return word.matches(REGEXP_RUSSIAN_WORD);
     }
 
     public Boolean wordsEnglish(String word) {
-        if (word.matches(REGEXP_ENGLISH_WORD)) {
-            return true;
-        }
-        return false;
+        return word.matches(REGEXP_ENGLISH_WORD);
     }
 
     public HashMap<String, Integer> textToLemma(String content) {
         HashMap<String, Integer> lemmaMap = new HashMap<>();
-        List<String> lemma = new ArrayList<>();
-        String text = htmlClearing(content);
-        text = content.trim();
+        List<String> lemma;
+        String text = htmlClearing(content).trim();
         String[] words = text.toLowerCase().split(REGEXP_TEXT);
         for (String word : words) {
             if (wordsRussian(word)) {
@@ -60,9 +52,7 @@ public class Lemmanisator {
     }
 
     public HashMap<String, Integer> lemmaMap(List<String> lemmaList, HashMap<String, Integer> lemmaMap) {
-        lemmaList.forEach((String w) -> {
-            lemmaMap.put(w, lemmaMap.getOrDefault(w, 0) + 1);
-        });
+        lemmaList.forEach((String w) -> lemmaMap.put(w, lemmaMap.getOrDefault(w, 0) + 1));
         return lemmaMap;
     }
 

@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.stereotype.Component;
 
-import org.springframework.transaction.annotation.Transactional;
 import searchengine.config.SiteConfig;
 
 import searchengine.model.*;
@@ -26,11 +25,11 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.locks.ReentrantLock;
 
 @Component
 @Data
 public class DateBaseService {
+
     @Autowired
     private SiteConfig sites;
     @Autowired
@@ -57,14 +56,18 @@ public class DateBaseService {
     @Getter
     private static AtomicInteger indexedSite = new AtomicInteger(0);
 
+    public void deleteAll(){
+        indexesRepository.deleteAll();
+        lemmaRepository.deleteAll();
+        pageRepository.deleteAll();
+        siteRepository.deleteAll();
+    }
 
-    @Transactional
     public Site findSiteByName(Site site) {
         site = siteRepository.findByName(site.getName());
         return site;
     }
 
-    @Transactional
     public Site updateSite(Site site, Status status) {
         site.setStatus(status);
         site.setStatusTime(LocalDateTime.now());
@@ -72,12 +75,8 @@ public class DateBaseService {
         return site;
     }
 
-    @Transactional
-    public Page addPageToDateBase(String path, int code, String content, Site site, int pageId) {
+    public Page addPageToDateBase(String path, int code, String content, Site site) {
         Page page = new Page();
-        if (!(pageId == 0)) {
-            page.setId(pageId);
-        }
         page.setPath(path);
         page.setCode(code);
         page.setContent(content);
@@ -86,7 +85,7 @@ public class DateBaseService {
         return page;
     }
 
-    public void addEntitiesToDateBase(Document doc, String url, int code, Site site, int pageId) throws IOException {
+    public void addEntitiesToDateBase(Document doc, String url, int code, Site site) throws IOException {
         String content = "Page not found";
         if (!(doc == null)) {
             content = doc.html();
@@ -94,14 +93,12 @@ public class DateBaseService {
             updateLastError(site, url + " - " + "Страница пустая");
         }
 
-
         String path = url.substring(url.indexOf('/', url.indexOf(".")));
-        Page page = addPageToDateBase(path, code, content, site, pageId);
+        Page page = addPageToDateBase(path, code, content, site);
         if (code == 200) {
             content = SearchService.cleanCodeForm(content, "body");
             createIndexAndLemma(content, page, site);
         }
-
     }
 
     public void createIndexAndLemma(String content, Page page, Site site) throws IOException {
@@ -110,7 +107,6 @@ public class DateBaseService {
         addLemmaToDateBase(lemma, site, page);
     }
 
-    @Transactional
     public void addLemmaToDateBase(HashMap<String, Integer> lemmaMap, Site site, Page page) {
         Map<Integer, Integer> indexMap = new HashMap<>();
         for (String lemmas : lemmaMap.keySet()) {
@@ -119,25 +115,20 @@ public class DateBaseService {
                 lemma.setLemma(lemmas);
                 lemma.setSiteByLemma(site);
                 lemma.setFrequency(1);
-                lemmaRepository.saveAndFlush(lemma);
-                indexMap.put(lemma.getId(), lemmaMap.get(lemmas));
             } else {
                 lemma = lemmaRepository.findFirstByLemmaAndSiteByLemma(lemmas, site);
                 lemma.setFrequency(lemma.getFrequency() + 1);
-                lemmaRepository.saveAndFlush(lemma);
-                indexMap.put(lemma.getId(), lemmaMap.get(lemmas));
             }
-
+            lemmaRepository.saveAndFlush(lemma);
+            indexMap.put(lemma.getId(), lemmaMap.get(lemmas));
         }
         indexAddToDB(indexMap, page, site);
     }
 
-
     public void indexAddToDB(Map<Integer, Integer> lemmaMap, Page page, Site site) {
         for (Integer lemmaIndex : lemmaMap.keySet()) {
             Indexes index = new Indexes();
-            Lemma lemma = new Lemma();
-            lemma = lemmaRepository.findById(lemmaIndex).get();
+            Lemma lemma = lemmaRepository.findById(lemmaIndex).get();
             index.setPageByIndex(page);
             index.setLemmaByIndex(lemma);
             index.setRankLemma(lemmaMap.get(lemmaIndex));
@@ -146,25 +137,13 @@ public class DateBaseService {
         updateSite(site, Status.INDEXING);
     }
 
-    @Transactional
-    public Site updateLastError(Site site, String errorMessage) {
+    public void updateLastError(Site site, String errorMessage) {
         site.setLastError(errorMessage);
         site.setStatusTime(LocalDateTime.now());
         siteRepository.saveAndFlush(site);
-        return site;
     }
 
-    public List<Integer> findPathByPage(String path) {
-        List<Integer> result = pageRepository.findPathByPage(path);
-        return result;
-    }
-
-    public List<Integer> lemmaIdByPath(Integer idPath) {
-        List<Integer> lemmaIdByPath = indexesRepository.findLemmaByPath(idPath);
-        return lemmaIdByPath;
-    }
-
-    public List<Integer> siteId(List<Site> site) {
+     public List<Integer> siteId(List<Site> site) {
         List<Integer> siteId = new ArrayList<>();
         for (Site sites : site) {
             siteId.add(sites.getId());
@@ -176,10 +155,12 @@ public class DateBaseService {
         for(Indexes indexes :indexesList){
            Lemma lemma = lemmaRepository.findLemmaByIndexesById(indexes);
            if(lemma.getFrequency() == 1){
+               indexesRepository.delete(indexes);
                lemmaRepository.delete(lemma);
            }else{
-               lemma.setFrequency((int) (lemma.getFrequency() - indexes.getRankLemma()));
+               lemma.setFrequency(lemma.getFrequency() - 1);
                lemmaRepository.saveAndFlush(lemma);
+               indexesRepository.delete(indexes);
            }
         }
     }

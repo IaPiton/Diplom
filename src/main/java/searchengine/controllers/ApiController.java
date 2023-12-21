@@ -1,5 +1,6 @@
 package searchengine.controllers;
 
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,20 +24,13 @@ import java.util.List;
 @RestController
 @RequestMapping("/api")
 @Slf4j
+@Data
 public class ApiController {
 
     private final StatisticsService statisticsService;
     private final IndexingService indexingService;
     private final SiteRepository siteRepository;
     private final SearchService searchService;
-
-    public ApiController(StatisticsService statisticsService, IndexingService indexingService,
-                         SiteRepository siteRepository, SearchService searchService) {
-        this.statisticsService = statisticsService;
-        this.indexingService = indexingService;
-        this.siteRepository = siteRepository;
-        this.searchService = searchService;
-    }
 
     @GetMapping("/statistics")
     public ResponseEntity<StatisticsResponse> statistics() {

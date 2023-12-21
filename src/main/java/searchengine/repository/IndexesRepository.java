@@ -22,13 +22,6 @@ public interface IndexesRepository extends JpaRepository<Indexes, Integer> {
     List<Integer> findLemmaByPath(@Param("pageId") Integer idPath);
 
     @Transactional
-    @Modifying
-    @Query(value = "delete from Indexes i where i.lemma_id=:id",
-            nativeQuery = true)
-    void deleteIndexPathByPage(@Param("id") Integer id);
-
-
-    @Transactional
     @Query(value = "SELECT i.id, i.page_id, i.lemma_id, i.rank_lemma FROM Indexes i " +
             "JOIN Lemma l ON i.lemma_id = l.id " +
             "where l.lemma = ?1 and l.site_id IN ?2 "
