@@ -15,7 +15,7 @@ spring:
       ddl-auto: update
 indexing-settings:
   sites:
-    - url: http://музей-ямщика.рф
+    - url: https://музей-ямщика.рф
       name: Музей Ямщика
 #    - url: http://playback.ru
 #      name: PlayBack.Ru

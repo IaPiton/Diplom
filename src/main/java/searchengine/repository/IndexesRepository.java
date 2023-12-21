@@ -9,7 +9,6 @@ import org.springframework.transaction.annotation.Transactional;
 import searchengine.model.Indexes;
 import searchengine.model.Page;
 
-
 import java.util.List;
 
 @Repository

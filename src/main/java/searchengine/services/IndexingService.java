@@ -88,15 +88,26 @@ public class IndexingService {
             return new ResultDto(false, "Индексация уже запущена, дождитесь " + "окончания индексации или остановите ее");
         } else {
             ArrayList<Site> sites = siteConfig.getSites();
-            for (Site siteForIndex : sites) {
-                if (url.toLowerCase().contains(siteForIndex.getUrl())) {
-                    log.info("Страница - " + url + " - добавлена на переиндексацию");
-                    indexingPage(url, siteForIndex);
-                    return new ResultDto(true, "Страница - проиндексирована");
-                }
+            Site site = conteinsUrl(sites, url);
+                if (site.getUrl() != null) {
+                log.info("Страница - " + url + " - добавлена на переиндексацию");
+                indexingPage(url, site);
+                return new ResultDto(true);
             }
-            return new ResultDto(false, "Данная страница находится " + "за пределами сайтов, указаных в конфигурационном файле.");
         }
+        log.info("Страница - " + url + " находится " +
+                "за пределами сайтов, указаных в конфигурационном файле.");
+        return new ResultDto(false, "Данная страница находится "
+                + "за пределами сайтов, указаных в конфигурационном файле.");
+    }
+
+    private Site conteinsUrl(ArrayList<Site> sites, String url) {
+        for (Site site : sites) {
+            if (url.toLowerCase().contains(site.getUrl())) {
+                return site;
+            }
+        }
+        return new Site();
     }
 
     public void indexingPage(String url, Site siteForIndex) {
