@@ -15,11 +15,6 @@ import java.util.List;
 
 @Repository
 public interface IndexesRepository extends JpaRepository<Indexes, Integer> {
-    @Transactional
-    @Modifying
-    @Query(value = "SELECT lemma_id from Indexes i where i.page_id = :pageId",
-            nativeQuery = true)
-    List<Integer> findLemmaByPath(@Param("pageId") Integer idPath);
 
     @Transactional
     @Query(value = "SELECT i.id, i.page_id, i.lemma_id, i.rank_lemma FROM Indexes i " +
