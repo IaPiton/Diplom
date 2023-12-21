@@ -37,5 +37,9 @@ public interface PageRepository extends JpaRepository<Page, Long> {
             "JOIN Lemma l ON i.lemma_id = l.id " +
             "where l.lemma = ?1 and l.site_Id IN ?2", nativeQuery = true)
     List<Integer> idByLemma(String lemma, List<Integer> siteId);
+
+    boolean existsByPath(String path);
+
+    Page findPageByPath(String path);
 }
 

@@ -12,6 +12,7 @@ import java.util.Collection;
 public class Page {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "id")
     private Integer id;
 
     @ManyToOne()
@@ -21,12 +22,12 @@ public class Page {
     @Column(name = "path", nullable = false)
     private String path;
 
-    @Column(nullable = false)
+    @Column(name = "code", nullable = false)
     private int code;
 
-    @Column(columnDefinition = "MEDIUMTEXT")
+    @Column(name = "content", columnDefinition = "MEDIUMTEXT")
     private String content;
 
-    @OneToMany(mappedBy = "pageByIndex")
+    @OneToMany(mappedBy = "pageByIndex", cascade = CascadeType.ALL)
     private Collection<Indexes> pagesById;
 }

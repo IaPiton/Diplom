@@ -12,17 +12,17 @@ spring:
     hibernate:
       dialect: org.hibernate.dialect.MySQLDialect
       show-sql: true
-      ddl-auto: update
+      ddl-auto: create
 indexing-settings:
   sites:
     - url: http://музей-ямщика.рф
       name: Музей Ямщика
-    - url: http://playback.ru
-      name: PlayBack.Ru
+#    - url: http://playback.ru
+#      name: PlayBack.Ru
     - url: https://www.lutherancathedral.ru/
       name: Lutherancathedral.ru
-    - url: https://www.svetlovka.ru/
-      name: Svetlovka.ru
+#    - url: https://www.svetlovka.ru/
+#      name: Svetlovka.ru
 configparser:
   useragent: PitonSearchBot/1.0
   referrer: http://www.google.com

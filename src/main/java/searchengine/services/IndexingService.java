@@ -10,11 +10,11 @@ import searchengine.config.ParserConfig;
 import searchengine.config.SiteConfig;
 
 import searchengine.dto.ResultDto;
-import searchengine.model.Site;
-import searchengine.model.Status;
+import searchengine.model.*;
 import searchengine.repository.IndexesRepository;
 import searchengine.repository.LemmaRepository;
 import searchengine.repository.PageRepository;
+import searchengine.repository.SiteRepository;
 import searchengine.utils.DateBaseService;
 import searchengine.utils.ParserLinks;
 
@@ -29,19 +29,19 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @Data
 @Slf4j
 public class IndexingService {
-    @Autowired
-    private ParserConfig parserConfig;
-    @Autowired
-    private final DateBaseService dateBaseService;
-    @Autowired
-    private SiteConfig siteConfig;
-    @Autowired
-    private LemmaRepository lemmaRepository;
-    @Autowired
-    private IndexesRepository indexesRepository;
-    @Autowired
-    private PageRepository pageRepository;
 
+    private final ParserConfig parserConfig;
+
+    private final DateBaseService dateBaseService;
+
+    private final SiteConfig siteConfig;
+
+    private final LemmaRepository lemmaRepository;
+
+    private final IndexesRepository indexesRepository;
+
+    private final PageRepository pageRepository;
+    private final SiteRepository siteRepository;
 
     public ResultDto startIndexing() {
         if (DateBaseService.getIndexingRun().get()) {
@@ -52,11 +52,9 @@ public class IndexingService {
             ArrayList<Site> sites = siteConfig.getSites();
             DateBaseService.setIndexingRun(new AtomicBoolean(true));
             DateBaseService.setIndexingStop(new AtomicBoolean(false));
-            indexesRepository.deleteAll();
-            pageRepository.deleteAll();
-            lemmaRepository.deleteAll();
+            siteRepository.deleteAll();
             for (Site site : sites) {
-                int countSite = DateBaseService.getCountSite().incrementAndGet();
+                DateBaseService.getCountSite().incrementAndGet();
                 CompletableFuture.runAsync(() -> {
                     try {
                         indexingSite(site);
@@ -107,21 +105,28 @@ public class IndexingService {
 
     public ResultDto deletePage(String url, Site siteForIndex) {
         String path = url.substring(url.indexOf('/', url.indexOf(".")));
-        if (!(dateBaseService.findPathByPage(path) == null)) {
-            List<Integer> idPath = dateBaseService.findPathByPage(path);
-            for (Integer idPage : idPath) {
-                List<Integer> lemmaId = dateBaseService.lemmaIdByPath(idPage);
-                for (Integer id : lemmaId) {
-                    indexesRepository.deleteIndexPathByPage(id);
-                    if (lemmaRepository.frequencyById(id) == 1) {
-                        lemmaRepository.deleteLemmaPathByPage(id);
-                    } else {
-                        lemmaRepository.updateLemmaFrequencyDelete(id);
-                    }
-                }
-                pageRepository.deletePathByPage(idPage);
-            }
+        if(pageRepository.existsByPath(path)){
+            Page page = pageRepository.findPageByPath(path);
+            List <Indexes> indexesList = indexesRepository.findIndexesByPageByIndex(page);
+            dateBaseService.lemmaByIndexesUpdate(indexesList);
+            pageRepository.delete(page);
         }
+
+//        if (!(dateBaseService.findPathByPage(path) == null)) {
+//            List<Integer> idPath = dateBaseService.findPathByPage(path);
+//            for (Integer idPage : idPath) {
+//                List<Integer> lemmaId = dateBaseService.lemmaIdByPath(idPage);
+//                for (Integer id : lemmaId) {
+//                    indexesRepository.deleteIndexPathByPage(id);
+//                    if (lemmaRepository.frequencyById(id) == 1) {
+//                        lemmaRepository.deleteLemmaPathByPage(id);
+//                    } else {
+//                        lemmaRepository.updateLemmaFrequencyDelete(id);
+//                    }
+//                }
+//                pageRepository.deletePathByPage(idPage);
+//            }
+//        }
         return indexesPage(url, siteForIndex);
     }
 

@@ -10,6 +10,7 @@ import lombok.Data;
 public class Indexes {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "id")
     private int id;
 
     @ManyToOne()

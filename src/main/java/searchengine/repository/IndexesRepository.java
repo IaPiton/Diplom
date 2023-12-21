@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import searchengine.model.Indexes;
+import searchengine.model.Page;
 
 
 import java.util.List;
@@ -46,6 +47,7 @@ public interface IndexesRepository extends JpaRepository<Indexes, Integer> {
                                           @Param("lemma") String lemma,
                                           @Param("rank_lemma") Pageable pageable);
 
+    List<Indexes> findIndexesByPageByIndex(Page page);
 }
 
 

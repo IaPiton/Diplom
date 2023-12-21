@@ -13,13 +13,14 @@ import java.util.Objects;
 public class Lemma {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @Column(name = "id")
     private int id;
 
     @ManyToOne()
     @JoinColumn(name = "site_id", referencedColumnName = "id", nullable = false)
     private Site siteByLemma;
 
-    @OneToMany(mappedBy = "lemmaByIndex")
+    @OneToMany(mappedBy = "lemmaByIndex", cascade = CascadeType.ALL)
     private Collection<Indexes> indexesById;
 
     @Column(name = "lemma")

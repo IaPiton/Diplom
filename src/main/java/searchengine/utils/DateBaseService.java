@@ -172,4 +172,15 @@ public class DateBaseService {
         return siteId;
     }
 
+    public void lemmaByIndexesUpdate(List<Indexes> indexesList) {
+        for(Indexes indexes :indexesList){
+           Lemma lemma = lemmaRepository.findLemmaByIndexesById(indexes);
+           if(lemma.getFrequency() == 1){
+               lemmaRepository.delete(lemma);
+           }else{
+               lemma.setFrequency((int) (lemma.getFrequency() - indexes.getRankLemma()));
+               lemmaRepository.saveAndFlush(lemma);
+           }
+        }
+    }
 }

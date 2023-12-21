@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 
 
 import org.springframework.transaction.annotation.Transactional;
+import searchengine.model.Indexes;
 import searchengine.model.Lemma;
 import searchengine.model.Site;
 
@@ -48,4 +49,6 @@ public interface LemmaRepository extends JpaRepository<Lemma, Integer> {
 
     @Transactional
     Lemma findFirstByLemmaAndSiteByLemma(String lemma, Site site);
+
+    Lemma findLemmaByIndexesById(Indexes indexes);
 }

@@ -15,9 +15,11 @@ public class Site {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "id")
     private int id;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "status")
     private Status status;
 
     @Column(name = "status_time")
@@ -26,16 +28,16 @@ public class Site {
     @Column(name = "last_error", columnDefinition = "TEXT")
     private String lastError;
 
-    @Column(unique = true, columnDefinition = "VARCHAR(255)")
+    @Column(name = "url", unique = true, columnDefinition = "VARCHAR(255)")
     private String url;
 
-    @Column(columnDefinition = "VARCHAR(255)")
+    @Column(name = "name", columnDefinition = "VARCHAR(255)")
     private String name;
 
-    @OneToMany(mappedBy = "siteByPage")
+    @OneToMany(mappedBy = "siteByPage", cascade = CascadeType.ALL)
     private Collection<Page> pagesById;
 
-    @OneToMany(mappedBy = "siteByLemma")
+    @OneToMany(mappedBy = "siteByLemma", cascade = CascadeType.ALL)
     private Collection<Lemma> lemmasById;
 
 }
