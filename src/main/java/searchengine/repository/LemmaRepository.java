@@ -19,7 +19,7 @@ import java.util.List;
 public interface LemmaRepository extends JpaRepository<Lemma, Integer> {
     long countBySiteByLemma(Site siteByLemma);
 
-    @Query(value = "SELECT sum(l.frequency) FROM Lemma l " +
+    @Query(value = "SELECT sum(l.frequency) FROM lemma l " +
             "where l.lemma = ?1 and site_id IN ?2"
             , nativeQuery = true)
     Integer frequencyLemma(@Param("lemma") String lemma,

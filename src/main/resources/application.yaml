@@ -1,0 +1,27 @@
+spring:
+  profiles:
+    active: postgresql
+  security:
+    user:
+      name: admin
+      password: 12345
+      roles: ADMIN
+  messages:
+    basename: lang.messages
+indexing-settings:
+  sites:
+    - url: http://музей-ямщика.рф
+      name: Музей Ямщика
+    - url: http://playback.ru
+      name: PlayBack.Ru
+    - url: https://www.lutherancathedral.ru/
+      name: Lutherancathedral.ru
+    - url: https://www.svetlovka.ru/
+      name: Svetlovka.ru
+configparser:
+  useragent: PitonSearchBot/1.0
+  referrer: http://www.google.com
+  timeout: 100000
+thymeleaf:
+  enabled: true
+  encoding: UTF-8

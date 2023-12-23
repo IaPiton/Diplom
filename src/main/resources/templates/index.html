@@ -1,4 +1,3 @@
-
 <!--END-->
 <!--END--><!DOCTYPE html><!--[if IE 7]>
 <html class="ie7" lang="ru">
@@ -9,7 +8,8 @@
 <!--[if IE 9]>
 <html class="ie9" lang="ru">
 <![endif]-->
-<!--[if gt IE 9]><!--> <html lang="ru"> <!--<![endif]-->
+<!--[if gt IE 9]><!-->
+<html lang="ru" xmlns:th="http://www.thymeleaf.org" xmlns="http://www.w3.org/1999/html"> <!--<![endif]-->
 <head>
   <title>Site Search Engine</title>
   <meta name="description" content="Site Search Engine">
@@ -31,8 +31,19 @@
   <script>
      var backendApiUrl = 'api'
   </script>
-  
+
   <script defer src="/assets/js/scripts.js?v=38874865"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+  <script type="text/javascript">
+    $(document).ready(function (){
+      $("#locales").change(function (){
+        var selectedOption = $("#locales").val();
+        if(selectedOption != ''){
+          window.location.replace('?lang='+selectedOption);
+        }
+      });
+    });
+  </script>
 
 </head>
 <body class="Site">
@@ -62,8 +73,20 @@
       <div class="Site-loadingIsComplete">
         <main class="Tabs Tabs_column Middle-main">
           <div class="Column">
-            <div class="Tabs-links"><a class="Tabs-link Tabs-link_ACTIVE" href="#dashboard"><img class="Tabs-icon" src="/assets/img/icons/dashboard.svg" alt="dashboard.svg"/><span class="Tabs-linkText">Dashboard</span></a><a class="Tabs-link" href="#management"><img class="Tabs-icon" src="/assets/img/icons/management.svg" alt="management.svg"/><span class="Tabs-linkText">Management</span></a><a class="Tabs-link" href="#search"><img class="Tabs-icon" src="/assets/img/icons/search.svg" alt="search.svg"/><span class="Tabs-linkText">Search</span></a>
+            <div class="Tabs-links"><a class="Tabs-link Tabs-link_ACTIVE" href="#dashboard">
+              <img class="Tabs-icon" src="/assets/img/icons/dashboard.svg" alt="dashboard.svg"/>
+              <span class="Tabs-linkText" th:text="#{menu.dashboard}"></span></a>
+              <a class="Tabs-link" href="#management">
+                <img class="Tabs-icon" src="/assets/img/icons/management.svg" alt="management.svg"/>
+                <span class="Tabs-linkText" th:text="#{menu.management}"></span></a><a class="Tabs-link" href="#search"><img class="Tabs-icon" src="/assets/img/icons/search.svg" alt="search.svg"/><span class="Tabs-linkText" th:text="#{menu.search}"></span></a>
             </div>
+            <br>
+                    <div th:text="#{menu.language}"></div>
+                    <select id="locales">
+                        <option value=" "></option>
+                        <option value="en">English</option>
+                        <option value="ru">Русский</option>
+                    </select>
           </div>
           <div class="Tabs-wrap">
             <div class="Tabs-block" id="dashboard">
@@ -74,11 +97,11 @@
                 </div>
                 <div class="Statistics">
                   <div class="Statistics-info">
-                    <div class="Statistics-block"><span class="Statistics-amount" id="totalSites"></span><span class="Statistics-title">sites</span>
+                    <div class="Statistics-block"><span class="Statistics-amount" id="totalSites"></span><span class="Statistics-title" th:text="#{dashboard.allSites}"></span>
                     </div>
-                    <div class="Statistics-block"><span class="Statistics-amount" id="totalPages"></span><span class="Statistics-title">pages</span>
+                    <div class="Statistics-block"><span class="Statistics-amount" id="totalPages"></span><span class="Statistics-title" th:text="#{dashboard.allPages}"></span>
                     </div>
-                    <div class="Statistics-block"><span class="Statistics-amount" id="totalLemmas"></span><span class="Statistics-title">lemmas</span>
+                    <div class="Statistics-block"><span class="Statistics-amount" id="totalLemmas"></span><span class="Statistics-title"th:text="#{dashboard.allLemmas}"></span>
                     </div>
                   </div>
                   <div class="HideBlock Statistics-example">
@@ -103,16 +126,16 @@
                   </h2>
                 </div>
                 <div>
-                  <button class="btn btn_primary API-startIndexing" data-btntype="check" data-check="false" data-alttext="Stop indexing" data-send="startIndexing" data-altsend="stopIndexing"><span class="btn-content">Start indexing</span>
+                  <button class="btn btn_primary API-startIndexing" data-btntype="check" data-check="false"  th:data-alttext="#{management.stopIndexing}" data-alttext="" data-send="startIndexing" data-altsend="stopIndexing"><span class="btn-content" th:text="#{management.startIndexing}"></span>
                   </button>
                 </div><br>
                 <div class="UpdatePageBlock">
-                  <h3>Add/update page:
+                  <h3 th:text="#{management.addUpdatePage}">
                   </h3>
                   <form class="form form_close" action="#" method="post" data-send="indexPage">
                     <div class="form-group form-group_row">
                       <input class="form-input" id="page" name="page" type="text"/>
-                      <button class="btn btn_primary form-btn" type="submit">Add/update
+                      <button class="btn btn_primary form-btn" type="submit" th:text="#{management.addUpdate}">
                       </button>
                     </div>
                   </form>
@@ -122,7 +145,7 @@
             <div class="Tabs-block" id="search">
               <div class="Section">
                 <div class="Section-header">
-                  <h2 class="Section-title">Search
+                  <h2 class="Section-title" th:text="#{search.search}">
                   </h2>
                 </div>
                 <form class="form form_close" action="#" method="post" data-send="search" data-sendlimit="10">
@@ -130,24 +153,27 @@
                     <div class="form-selectWrap">
                       <!-- - var options = setOptions(items, ['value', 'selected', 'disabled']);-->
                       <select class="form-select" name="site">
-                        <option value="" selected="selected">All sites
+                        <option value="" selected="selected" th:text="#{search.allSites}">
                         </option>
                       </select>
                     </div>
                   </div>
                   <div class="form-group form-group_row">
-                    <input class="form-input" id="query" name="query" type="text" placeholder="Query"/>
-                    <button class="btn btn_primary form-btn" type="submit">Search
+                    <input class="form-input" id="query" name="query" type="text" th:placeholder="#{search.placeholder}"
+                    placeholder=""/>
+                    <button class="btn btn_primary form-btn" type="submit" th:text="#{search.search}">
                     </button>
                   </div>
                 </form>
                 <div class="SearchResult">
-                  <strong class="SearchResult-title">Found&#32;<span class="SearchResult-amount">0</span>&#32;results
-                  </strong>
+                  <strong class="SearchResult-title">
+                    <span th:text="#{search.foundResults}">Found results:&#32;</span>
+                    <span class="SearchResult-amount">0</span>
+                </strong>
                   <div class="SearchResult-content">
                   </div>
                   <div class="SearchResult-footer SearchResult-footer_hide">
-                    <button class="btn btn_primary" data-send="search" data-sendtype="next">Show more<span class="SearchResult-remain">(0)</span>
+                    <button class="btn btn_primary" data-send="search" data-sendtype="next" th:text="#{search.showMore}"><span class="SearchResult-remain">(0)</span>
                     </button>
                   </div>
                 </div>

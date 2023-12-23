@@ -1,5 +1,9 @@
 'use strict';
+
+
+
 (function ($) {
+    
 
     var px = ''; //'rt--'
 
@@ -61,6 +65,8 @@ button().init();
 /*global ActiveXObject */
 ;(function($) {
 "use strict";
+
+
 
 /*
     Usage Note:
@@ -1614,7 +1620,7 @@ var API = function(){
                             .before(site.name + ' - ' + site.url);
                         var time = new Date(site.statusTime);
                         $blockSiteExample.find('.Statistics-description')
-                            .html('<div class="Statistics-option"><strong>Status time:</strong> ' +
+                            .html('<div class="Statistics-option" ><strong>Status time:</strong> ' +
                                 time.getDate() + '.' +
                                 (time.getMonth() + 1) + '.' +
                                 time.getFullYear() + ' ' +

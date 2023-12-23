@@ -1,0 +1,14 @@
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3305/search_engine
+    username: piton
+    password: Testtest
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+     maximumPoolSize: 100
+     connectionTimeout: 100000
+     maxLifetime: 120000
+     minimumIdle: 100
+  jpa:
+    hibernate.ddl-auto: update
+    dialect: org.hibernate.dialect.MySQLDialect

@@ -15,8 +15,8 @@ import java.util.List;
 public interface IndexesRepository extends JpaRepository<Indexes, Integer> {
 
     @Transactional
-    @Query(value = "SELECT i.id, i.page_id, i.lemma_id, i.rank_lemma FROM Indexes i " +
-            "JOIN Lemma l ON i.lemma_id = l.id " +
+    @Query(value = "SELECT i.id, i.page_id, i.lemma_id, i.rank_lemma FROM indexes i " +
+            "JOIN lemma l ON i.lemma_id = l.id " +
             "where l.lemma = ?1 and l.site_id IN ?2 "
             , nativeQuery = true
     )
@@ -24,8 +24,8 @@ public interface IndexesRepository extends JpaRepository<Indexes, Integer> {
                                     @Param("siteId") List<Integer> siteId);
 
     @Transactional
-    @Query(value = "SELECT i.id, i.page_id, i.lemma_id, i.rank_lemma FROM Indexes i " +
-            "JOIN Lemma l ON i.lemma_id = l.id " +
+    @Query(value = "SELECT i.id, i.page_id, i.lemma_id, i.rank_lemma FROM indexes i " +
+            "JOIN lemma l ON i.lemma_id = l.id " +
             "where l.lemma = ?2 AND i.page_id IN ?1"
             , nativeQuery = true
     )

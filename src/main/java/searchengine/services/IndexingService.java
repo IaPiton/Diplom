@@ -124,6 +124,7 @@ public class IndexingService {
             dateBaseService.lemmaByIndexesUpdate(indexesList);
             pageRepository.delete(page);
         }
+
         indexesPage(url, siteForIndex);
     }
 

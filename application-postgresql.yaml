@@ -1,0 +1,8 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5431/search_engine
+    username: root
+    password: Testtest
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate.ddl-auto: update

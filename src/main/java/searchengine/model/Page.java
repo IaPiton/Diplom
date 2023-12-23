@@ -10,6 +10,7 @@ import java.util.Collection;
 @Entity
 @Table(name = "page", indexes = @Index(columnList = "path"))
 public class Page {
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id")
@@ -25,8 +26,9 @@ public class Page {
     @Column(name = "code", nullable = false)
     private int code;
 
-    @Column(name = "content", columnDefinition = "MEDIUMTEXT")
+    @Column(name = "content", length = 900000)
     private String content;
+
 
     @OneToMany(mappedBy = "pageByIndex")
     private Collection<Indexes> pagesById;

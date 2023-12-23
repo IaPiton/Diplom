@@ -18,9 +18,9 @@ public interface PageRepository extends JpaRepository<Page, Long> {
     @Override
     void deleteAll();
 
-       @Query(value = "SELECT p.id FROM Page p " +
-            "JOIN Indexes i ON i.page_id = p.id " +
-            "JOIN Lemma l ON i.lemma_id = l.id " +
+       @Query(value = "SELECT p.id FROM page p " +
+            "JOIN indexes i ON i.page_id = p.id " +
+            "JOIN lemma l ON i.lemma_id = l.id " +
             "where l.lemma = ?1 and l.site_Id IN ?2", nativeQuery = true)
     List<Integer> idByLemma(String lemma, List<Integer> siteId);
 
